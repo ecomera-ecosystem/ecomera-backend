@@ -1,5 +1,6 @@
 package com.moushtario.ecomera.user;
 
+import com.moushtario.ecomera.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,6 +46,9 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     @CreationTimestamp
     @Column(updatable = false)
