@@ -1,5 +1,6 @@
 package com.moushtario.ecomera.Configuration;
 
+import com.moushtario.ecomera.token.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService; // Service to handle JWT operations
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -53,8 +55,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
        // when username is there but not authenticated.
        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+           // Check if the token is not expired nor revoked, ensuring only active tokens are allowed through the authentication filter.
+           var isTokenActive = tokenRepository.findByToken(jwt)
+                   .map(token -> !token.isExpired() && !token.isRevoked())
+                   .orElse(false); // Check if the token is valid and not revoked
+
            // if token is valid, set the authentication in the security context and update it
-           if(jwtService.isTokenValid(jwt, userDetails)) {
+           if(jwtService.isTokenValid(jwt, userDetails) && isTokenActive) {
                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                        userDetails,
                        null, // we don't have credentials.
