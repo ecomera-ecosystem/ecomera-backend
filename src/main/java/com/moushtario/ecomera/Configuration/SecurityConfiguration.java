@@ -9,8 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 /**
  * @author Youssef
@@ -25,6 +27,7 @@ public class SecurityConfiguration {
 
     private final Filter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final LogoutHandler logoutHandler;
 
 
     @Bean
@@ -37,9 +40,14 @@ public class SecurityConfiguration {
                     .anyRequest().authenticated() // Require authentication for all other requests
                             )
                     .sessionManagement(ss -> ss.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
-
+                    .authenticationProvider(authenticationProvider) // Set the authentication provider
                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter before the UsernamePasswordAuthenticationFilter
 //                    .httpBasic(AbstractHttpConfigurer::disable);// Disable basic authentication
+                    .logout(logout -> logout
+                            .logoutUrl("/api/auth/logout") // Set the logout URL
+                            .addLogoutHandler(logoutHandler) // Handle the logout
+                            .logoutSuccessHandler((req, res, auth) -> SecurityContextHolder.clearContext()) // Clear security context on logout
+                    )
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
