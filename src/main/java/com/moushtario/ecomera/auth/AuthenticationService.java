@@ -1,22 +1,22 @@
 package com.moushtario.ecomera.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moushtario.ecomera.Configuration.JwtService;
 import com.moushtario.ecomera.token.*;
 import com.moushtario.ecomera.user.Role;
 import com.moushtario.ecomera.user.User;
 import com.moushtario.ecomera.user.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * @author Youssef
- * @version 1.0
- * @created 16/04/2025
- * @lastModified 8/5/2025
- */
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @Service
 public class AuthenticationService {
@@ -45,11 +45,13 @@ public class AuthenticationService {
 
         // Generate a JWT token for the newly registered user
         var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
         // Save the token to the database
         saveUserToken(savedUser, jwtToken);
 
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -69,6 +71,8 @@ public class AuthenticationService {
                 .orElseThrow(); // Throw any exception not important
 
         var jwtToken = jwtService.generateToken(user); // Generate a JWT token for the authenticated user
+        var refreshToken = jwtService.generateRefreshToken(user); // Generate a refresh token for the authenticated user
+
         // Revoke (cancel) all previous tokens for the user
         revokeAllUserTokens(user);
         // Save the token to the database
@@ -76,7 +80,8 @@ public class AuthenticationService {
 
         // Return the generated token in the response
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -100,13 +105,56 @@ public class AuthenticationService {
      * @param user the user whose tokens will be revoked
      */
     private void revokeAllUserTokens(User user) {
+        // Find a list of all valid tokens for the user
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        // If the list is empty, do nothing
         if (validUserTokens.isEmpty())
             return;
+        // Otherwise, set all tokens to expired and revoked
         validUserTokens.forEach(token -> {
             token.setExpired(true);
             token.setRevoked(true);
         });
+        // Save changes to the database
         tokenRepository.saveAll(validUserTokens);
+    }
+
+    /**
+     * Refresh the token for a user.
+     * @param request the HTTP request containing the authorization header with the refresh token
+     * @param response the HTTP response to send the new token
+     * @throws IOException if an I/O error occurs while writing the response
+     */
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String refreshToken;
+        final String userEmail;
+        // Check if the authorization header is present and starts with "Bearer "
+        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+            return;
+        }
+        // Extract the refresh token from the authorization header
+        refreshToken = authHeader.substring(7);
+        // Extract the user email from the refresh token
+        userEmail = jwtService.extractUsername(refreshToken);
+        // Check if the user email is not null and retrieve the user from the database
+        if (userEmail != null) {
+            var user = this.userRepository.findByEmail(userEmail)
+                    .orElseThrow();
+            // Check if the refresh token is valid for the user
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                var accessToken = jwtService.generateToken(user); // Generate a new access token for the user
+                revokeAllUserTokens(user); // Revoke all previous tokens for the user
+                saveUserToken(user, accessToken); // Save the new access token to the database
+
+                // Create a new authentication response with the new access token and refresh token
+                var authResponse = AuthenticationResponse.builder()
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .build();
+                // Set the content type to JSON
+                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            }
+        }
     }
 }
