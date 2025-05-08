@@ -2,7 +2,6 @@ package com.moushtario.ecomera.Configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-//import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,28 +14,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * @author Youssef
- * @version 1.0
- * @created 13/04/2025
- */
-
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
+    @Value("${application.security.jwt.expiration}")
+    private long jwtExpiration;
+    @Value("${application.security.jwt.refresh-token.expiration}")
+    private long refreshExpiration;
+
 
     /**
      * Generates a JWT token for the given user.
      * @return the generated JWT token cryptographically signed with the secret key.
      */
     private SecretKey getKey() {
-        if (SECRET_KEY == null || SECRET_KEY.isEmpty()) {
+        if (secretKey == null || secretKey.isEmpty()) {
             throw new IllegalStateException("JWT Secret Key is not set!");
         }
 //        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -50,7 +48,7 @@ public class JwtService {
     }
 
     /**
-     * Extracts Clamins from the given JWT token.
+     * Extracts Claims from the given JWT token.
      * @param token the signed JWT token (compact JWS string)
      * @param claimsResolver a function to extract specific claims from the token
      * @return a generic type T containing the extracted claims
@@ -82,15 +80,15 @@ public class JwtService {
      * @return the generated JWT token
      */
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>(); // Map that holds extra custom claims.
+        return generateToken(new HashMap<>(), userDetails);
+    }
 
-        return Jwts.builder()
-                .claims(claims) // Set the claims
-                .subject(userDetails.getUsername()) // Set the subject
-                .issuedAt(new Date(System.currentTimeMillis())) // Set the issued date
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Set the expiration date for 10 hours
-                .signWith(getKey()) // Sign the token with the key
-                .compact(); // Compact the token: it generates the token as a string
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return buildToken(extraClaims, userDetails, jwtExpiration);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -106,5 +104,26 @@ public class JwtService {
         return extractUsername(token, Claims::getExpiration);
     }
 
+    /**
+     * Builds a JWT token with the given claims and user details.
+     * @param extraClaims additional claims to be included in the token
+     * @param userDetails the user details for which the token is generated. uses getUsername() method to extract the username from the UserDetails object.
+     * @param expiration the expiration time in milliseconds
+     * @return the generated JWT token
+     */
+    private String buildToken(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails,
+            long expiration
+    ) {
+        return Jwts
+                .builder()
+                .claims(extraClaims) // Set the claims
+                .subject(userDetails.getUsername()) // Set the subject
+                .issuedAt(new Date(System.currentTimeMillis())) // Set the issued date
+                .expiration(new Date(System.currentTimeMillis() + expiration)) // Set the expiration date for 10 hours
+                .signWith(getKey()) // Sign the token with the key
+                .compact(); // Compact the token: it generates the token as a string
+    }
 
 }
