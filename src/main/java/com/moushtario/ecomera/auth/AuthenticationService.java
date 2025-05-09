@@ -3,7 +3,6 @@ package com.moushtario.ecomera.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moushtario.ecomera.Configuration.JwtService;
 import com.moushtario.ecomera.token.*;
-import com.moushtario.ecomera.user.Role;
 import com.moushtario.ecomera.user.User;
 import com.moushtario.ecomera.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +37,7 @@ public class AuthenticationService {
                 .lastName(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(request.getRole())
                 .build();
 
         var savedUser = userRepository.save(user); // Save the user to the database

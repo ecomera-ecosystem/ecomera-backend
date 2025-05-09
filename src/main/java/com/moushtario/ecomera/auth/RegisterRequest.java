@@ -1,14 +1,15 @@
 package com.moushtario.ecomera.auth;
 
+import com.moushtario.ecomera.user.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author dell
- * @version 1.0
- * @created 16/04/2025
+ * @author Youssef
+ * @version 2.0
+ * @created 09/05/2025
  *
  */
 @Data
@@ -21,4 +22,5 @@ public class RegisterRequest {
     private String lastname;
     private String email;
     private String password;
+    private Role role;
 }

@@ -6,7 +6,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -15,9 +14,9 @@ import java.util.List;
 
 /**
  * @author Youssef
- * @version 1.0
+ * @version 2.0
  * @created 11/04/2025
- * @lastModified 11/04/2025
+ * @lastModified 09/05/2025
  */
 
 @Getter
@@ -59,7 +58,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return role.getAuthorities();
     }
 
     @Override

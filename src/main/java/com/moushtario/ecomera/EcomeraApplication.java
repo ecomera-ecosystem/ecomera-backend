@@ -1,8 +1,15 @@
 package com.moushtario.ecomera;
 
+import com.moushtario.ecomera.auth.AuthenticationService;
+import com.moushtario.ecomera.auth.RegisterRequest;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+import static com.moushtario.ecomera.user.Role.ADMIN;
+import static com.moushtario.ecomera.user.Role.MANAGER;
 
 @SpringBootApplication
 public class EcomeraApplication {
@@ -24,6 +31,37 @@ public class EcomeraApplication {
 
 		// Run the application
 		SpringApplication.run(EcomeraApplication.class, args);
+	}
+
+	/**
+	 * Command line runner to create an admin and a manager user on startup
+	 * @param authService the authentication service for registering & authenticating users
+	 * @return access tokens for an admin and a manager
+	 */
+	@Bean
+	public CommandLineRunner commandLineRunner(
+			AuthenticationService authService
+	) {
+		return args -> {
+			var admin = RegisterRequest.builder()
+					.firstname("Admin")
+					.lastname("Admin")
+					.email("admin@mail.com")
+					.password("password")
+					.role(ADMIN)
+					.build();
+			System.out.println("Admin access token: " + authService.register(admin).getAccessToken());
+
+			var manager = RegisterRequest.builder()
+					.firstname("Manager")
+					.lastname("Manager")
+					.email("manager@mail.com")
+					.password("password")
+					.role(MANAGER)
+					.build();
+			System.out.println("Manager access token: " + authService.register(manager).getAccessToken());
+
+		};
 	}
 
 }
