@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.Configuration;
+package com.moushtario.ecomera.auth.config;
 
 import com.moushtario.ecomera.token.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;

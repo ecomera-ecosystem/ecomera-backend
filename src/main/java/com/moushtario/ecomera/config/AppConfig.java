@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.Configuration;
+package com.moushtario.ecomera.config;
 
 import com.moushtario.ecomera.user.UserRepository;
 import lombok.RequiredArgsConstructor;

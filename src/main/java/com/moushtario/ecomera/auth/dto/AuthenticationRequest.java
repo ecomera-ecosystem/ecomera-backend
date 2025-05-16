@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.auth;
+package com.moushtario.ecomera.auth.dto;
 
 import lombok.*;
 

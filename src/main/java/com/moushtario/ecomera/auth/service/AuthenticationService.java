@@ -1,7 +1,10 @@
-package com.moushtario.ecomera.auth;
+package com.moushtario.ecomera.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moushtario.ecomera.Configuration.JwtService;
+import com.moushtario.ecomera.auth.config.JwtService;
+import com.moushtario.ecomera.auth.dto.AuthenticationRequest;
+import com.moushtario.ecomera.auth.dto.AuthenticationResponse;
+import com.moushtario.ecomera.auth.dto.RegisterRequest;
 import com.moushtario.ecomera.token.*;
 import com.moushtario.ecomera.user.User;
 import com.moushtario.ecomera.user.UserRepository;

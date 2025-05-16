@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.Configuration;
+package com.moushtario.ecomera.auth.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

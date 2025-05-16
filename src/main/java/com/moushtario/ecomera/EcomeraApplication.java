@@ -1,7 +1,7 @@
 package com.moushtario.ecomera;
 
-import com.moushtario.ecomera.auth.AuthenticationService;
-import com.moushtario.ecomera.auth.RegisterRequest;
+import com.moushtario.ecomera.auth.service.AuthenticationService;
+import com.moushtario.ecomera.auth.dto.RegisterRequest;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

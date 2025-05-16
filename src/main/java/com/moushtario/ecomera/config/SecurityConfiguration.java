@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.Configuration;
+package com.moushtario.ecomera.config;
 
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;

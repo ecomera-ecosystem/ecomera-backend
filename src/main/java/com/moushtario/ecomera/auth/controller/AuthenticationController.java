@@ -1,6 +1,10 @@
-package com.moushtario.ecomera.auth;
+package com.moushtario.ecomera.auth.controller;
 
 
+import com.moushtario.ecomera.auth.dto.AuthenticationRequest;
+import com.moushtario.ecomera.auth.dto.AuthenticationResponse;
+import com.moushtario.ecomera.auth.service.AuthenticationService;
+import com.moushtario.ecomera.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
