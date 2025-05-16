@@ -15,9 +15,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import static com.moushtario.ecomera.user.Permission.*;
+//import static com.moushtario.ecomera.user.Permission.*;
 import static com.moushtario.ecomera.user.Role.*;
-import static org.springframework.http.HttpMethod.*;
+//import static org.springframework.http.HttpMethod.*;
 
 /**
  * @author Youssef
@@ -30,6 +30,20 @@ import static org.springframework.http.HttpMethod.*;
 @EnableMethodSecurity // Enable method security which allows us to use @PreAuthorize and @PostAuthorize annotations ...etc
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+    private static final String[] WHITE_LIST_URL = {
+            "/api/auth/**",
+            "/v2/api-docs",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-resources",
+            "/swagger-resources/**",
+            "/configuration/ui",
+            "/configuration/security",
+            "/swagger-ui/**",
+            "/swagger-ui",
+            "/webjars/**",
+            "/swagger-ui.html"
+    };
 
     private final Filter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -42,7 +56,7 @@ public class SecurityConfiguration {
             return http
                     .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                     .authorizeHttpRequests(req -> req
-                            .requestMatchers("/api/auth/**").permitAll() // White Listing: Allow access to authentication endpoints (login, register)
+                            .requestMatchers(WHITE_LIST_URL).permitAll() // White Listing: Allow access to authentication endpoints (login, register)
                             .requestMatchers("/api/management/**").hasAnyRole(ADMIN.name(), MANAGER.name()) // Allow access to management endpoints for ADMIN and MANAGER roles
                             // Use either Roles or Authorities you can uncomment next lines but you'll have to comment/remove hasAnyRole(ADMIN.name(), MANAGER.name())
 
