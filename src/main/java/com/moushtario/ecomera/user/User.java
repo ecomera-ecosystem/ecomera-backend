@@ -1,5 +1,6 @@
 package com.moushtario.ecomera.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.moushtario.ecomera.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,6 +48,7 @@ public class User implements UserDetails {
     private Role role;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Token> tokens;
 
     @CreationTimestamp
