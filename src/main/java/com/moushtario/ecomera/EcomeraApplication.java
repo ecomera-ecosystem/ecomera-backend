@@ -7,11 +7,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import static com.moushtario.ecomera.user.Role.ADMIN;
-import static com.moushtario.ecomera.user.Role.MANAGER;
+import static com.moushtario.ecomera.user.Role.*;
 
 @SpringBootApplication
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class EcomeraApplication {
 
 	public static void main(String[] args) {
@@ -60,6 +61,15 @@ public class EcomeraApplication {
 					.role(MANAGER)
 					.build();
 			System.out.println("Manager access token: " + authService.register(manager).getAccessToken());
+
+			var ysf = RegisterRequest.builder()
+					.firstname("Youssef")
+					.lastname("Ammari")
+					.email("youssef.ammari.795@gmail.com")
+					.password("12345678")
+					.role(USER)
+					.build();
+			System.out.println("YSF access token: " + authService.register(ysf).getAccessToken());
 
 		};
 	}

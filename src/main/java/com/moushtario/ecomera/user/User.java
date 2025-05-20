@@ -6,6 +6,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -15,9 +20,9 @@ import java.util.List;
 
 /**
  * @author Youssef
- * @version 2.0
+ * @version 2.1
  * @created 11/04/2025
- * @lastModified 09/05/2025
+ * @lastModified 20/05/2025
  */
 
 @Getter
@@ -27,6 +32,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
     @Id
@@ -57,6 +63,21 @@ public class User implements UserDetails {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    // Auditing fields
+    @CreatedBy
+    protected int createdBy;
+
+    @CreatedDate
+    @Column(nullable = true, updatable = false)
+    protected LocalDateTime createdDate;
+
+    @LastModifiedBy
+    protected int lastModifiedBy;
+
+    @LastModifiedDate
+    protected LocalDateTime lastModifiedDate;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
