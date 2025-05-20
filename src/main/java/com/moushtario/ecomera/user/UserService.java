@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.List;
 
 /**
  * @author Youssef
@@ -46,4 +47,34 @@ public class UserService {
 
     }
 
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public User getUserById(int id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public void deleteUser(int id) {
+        userRepository.deleteById(id);
+    }
+
+    public User getConnectedUser(Principal connectedUser) {
+        return (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+    }
+
+    public List<String> getConnectedUserRoles(Principal connectedUser) {
+        return getConnectedUser(connectedUser).getAuthorities()
+                .stream()
+                .map(role -> role.getAuthority())
+                .toList();
+    }
 }
