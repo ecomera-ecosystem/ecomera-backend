@@ -53,6 +53,9 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column
+    private LocalDateTime lastLogin;
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Token> tokens;

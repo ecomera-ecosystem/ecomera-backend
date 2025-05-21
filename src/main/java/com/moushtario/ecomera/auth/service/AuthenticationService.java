@@ -16,8 +16,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -79,6 +81,9 @@ public class AuthenticationService {
         revokeAllUserTokens(user);
         // Save the token to the database
         saveUserToken(user, jwtToken);
+
+        // Update the last login time
+        user.setLastLogin(LocalDateTime.now());
 
         // Return the generated token in the response
         return AuthenticationResponse.builder()
@@ -158,5 +163,18 @@ public class AuthenticationService {
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
+    }
+
+    /**
+     * Update the last login time of a user.
+     * @param email the email of the user to update
+     */
+    @Transactional
+    public void updateLastLogin(String email) {
+        userRepository.findByEmail(email)
+                .ifPresent(user -> {
+                    user.setLastLogin(LocalDateTime.now());
+                    // No need to manually save - @Transactional will flush
+                });
     }
 }
