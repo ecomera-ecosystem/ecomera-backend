@@ -56,6 +56,9 @@ public class User implements UserDetails {
     @Column
     private LocalDateTime lastLogin;
 
+    @Column
+    private String ipAddress;
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Token> tokens;

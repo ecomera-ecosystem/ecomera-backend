@@ -27,9 +27,23 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        authService.updateLastLogin(request.getEmail());
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestBody AuthenticationRequest request, HttpServletRequest httpServletRequest,
+            @RequestHeader(value = "X-Forwarded-For", required = false) String ipAddress) {
+
+        // Provide default if header missing
+        String clientIp = ipAddress != null ? ipAddress : getClientIpFromRequest(httpServletRequest);
+
+        authService.updateLastLogin(request.getEmail(), clientIp);
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    private String getClientIpFromRequest(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
     }
 
     @PostMapping("/refresh-token")

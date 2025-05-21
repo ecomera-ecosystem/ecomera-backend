@@ -170,10 +170,11 @@ public class AuthenticationService {
      * @param email the email of the user to update
      */
     @Transactional
-    public void updateLastLogin(String email) {
+    public void updateLastLogin(String email, String ip) {
         userRepository.findByEmail(email)
                 .ifPresent(user -> {
                     user.setLastLogin(LocalDateTime.now());
+                    user.setIpAddress(ip);
                     // No need to manually save - @Transactional will flush
                 });
     }
