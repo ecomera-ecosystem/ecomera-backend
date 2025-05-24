@@ -1,5 +1,7 @@
 package com.moushtario.ecomera.mvc.service;
 
+import com.moushtario.ecomera.mapper.ProductMapper;
+import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
 import com.moushtario.ecomera.mvc.domain.entity.Product;
 import com.moushtario.ecomera.mvc.domain.enums.CategoryType;
 import com.moushtario.ecomera.mvc.repository.ProductRepository;
@@ -18,14 +20,16 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     // JPA methods
     public Boolean isExists(UUID id) {
         return productRepository.existsById(id);
     }
 
-    public Product saveProduct(Product p) {
-        // Convert ProductDTO to Product entity
+    public ProductDto saveProduct(ProductDto dto) {
+        /*
+        // Convert ProductDto to Product entity
 //        Product product = Product.builder()
 //                .title(p.getTitle())
 //                .description(p.getDescription())
@@ -37,11 +41,15 @@ public class ProductService {
 //                        .build())
 //                .imageUrl(p.getImageUrl())
 //                .build();
-        return productRepository.save(p);
+*/
+        Product product = productMapper.toEntity(dto);
+        return productMapper.toDto(productRepository.save(product));
     }
 
-    public Product getProductById(UUID id) {
-        return productRepository.findById(id).orElse(null);
+    public ProductDto getProductById(UUID id) {
+        return productRepository.findById(id)
+                .map(productMapper::toDto)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
     /**
@@ -51,8 +59,9 @@ public class ProductService {
      * @return List of products
      */
     @Transactional(readOnly = true)
-    public List<Product> getAllProducts(){
-        return productRepository.findAll();
+    public List<ProductDto> getAllProducts(){
+        List<Product> productList = productRepository.findAll();
+        return productMapper.toDtoList(productList);
     }
 
     public void deleteProductById(UUID id) {
@@ -64,25 +73,33 @@ public class ProductService {
     }
 
     // Search
-    public List<Product> searchProducts(String query) {
-        return  productRepository.searchProducts(query);
+    public List<ProductDto> searchProducts(String query) {
+        return  productMapper.toDtoList(productRepository.searchProducts(query));
     }
 
-    public List<Product> getProductsByCategory(String category) {
-        CategoryType categoryType = CategoryType.valueOf(category);
+    public List<ProductDto> getProductsByCategory(String category) {
+        CategoryType categoryType = CategoryType.fromString(category)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + category));
 
-        log.info("Searching products by category: " + categoryType);
+        log.info("Searching products by category: {}", categoryType);
 
-        return productRepository.findByCategory(categoryType);
+        return productMapper.toDtoList(productRepository.findByCategory(categoryType));
     }
 
-    public Product getProductByTitle(String title) {
-        return productRepository.findByTitle(title);
+    public ProductDto getProductByTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty");
+        }
+        return productMapper.toDto(productRepository.findByTitle(title));
     }
 
-    public Iterable<Product> getProductsByPriceBetweenRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        return productRepository.findByPriceBetween(minPrice, maxPrice);
+    public Iterable<ProductDto> getProductsByPriceBetweenRange(BigDecimal minPrice, BigDecimal maxPrice) throws Exception {
+        if (minPrice == null || maxPrice == null || minPrice.compareTo(maxPrice) > 0) {
+            throw new Exception("Invalid price range");
+        }
+        return productMapper.toDtoIterable(productRepository.findByPriceBetween(minPrice, maxPrice));
     }
+
 
     // TODO: Pagination
     //    public Page<Product> findProductsByCategory(String category, Pageable pageable) {
