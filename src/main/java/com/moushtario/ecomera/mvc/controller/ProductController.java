@@ -3,12 +3,14 @@ package com.moushtario.ecomera.mvc.controller;
 import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
 import com.moushtario.ecomera.mvc.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,8 +27,13 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<Page<ProductDto>> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDto> productsPage = productService.getAllProducts(pageable);
+        return ResponseEntity.ok(productsPage);
     }
 
     @GetMapping("/{id}")
@@ -65,17 +72,25 @@ public class ProductController {
     // Special Endpoint
 
     @GetMapping("/search")
-    public  ResponseEntity<List<ProductDto>> searchProducts(@RequestParam String query){
+    public  ResponseEntity<Page<ProductDto>> searchProducts(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
 
-        List<ProductDto> products = productService.searchProducts(query);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDto> products = productService.searchProducts(query, pageable);
         return new ResponseEntity<>(products, HttpStatus.OK);
 
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<?> getProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<?> getProductsByCategory(@PathVariable String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+    {
         try {
-            List<ProductDto> products = productService.getProductsByCategory(category);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ProductDto> products = productService.getProductsByCategory(category, pageable);
             return ResponseEntity.ok(products);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -92,11 +107,15 @@ public class ProductController {
     }
 
     @GetMapping("/price")
-    public ResponseEntity<?> getProductsByPriceInRange(@RequestParam BigDecimal minPrice, @RequestParam BigDecimal maxPrice) throws Exception {
+    public ResponseEntity<?> getProductsByPriceInRange(@RequestParam BigDecimal minPrice, @RequestParam BigDecimal maxPrice,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) throws Exception {
+
         if (minPrice == null || maxPrice == null || minPrice.compareTo(maxPrice) > 0) {
             return ResponseEntity.badRequest().body("Invalid price range");
         }
-        Iterable<ProductDto> products = productService.getProductsByPriceBetweenRange(minPrice, maxPrice);
+        Pageable pageable = PageRequest.of(page, size);
+        Iterable<ProductDto> products = productService.getProductsByPriceBetweenRange(minPrice, maxPrice, pageable);
         return ResponseEntity.ok(products);
     }
 

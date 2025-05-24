@@ -7,11 +7,12 @@ import com.moushtario.ecomera.mvc.domain.enums.CategoryType;
 import com.moushtario.ecomera.mvc.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -59,9 +60,9 @@ public class ProductService {
      * @return List of products
      */
     @Transactional(readOnly = true)
-    public List<ProductDto> getAllProducts(){
-        List<Product> productList = productRepository.findAll();
-        return productMapper.toDtoList(productList);
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        Page<Product> products = productRepository.findAll(pageable);
+        return products.map(productMapper::toDto);
     }
 
     public void deleteProductById(UUID id) {
@@ -73,17 +74,19 @@ public class ProductService {
     }
 
     // Search
-    public List<ProductDto> searchProducts(String query) {
-        return  productMapper.toDtoList(productRepository.searchProducts(query));
+    public Page<ProductDto> searchProducts(String query, Pageable pageable) {
+        Page<Product> products =  productRepository.searchProducts(query, pageable);
+        return products.map(productMapper::toDto);
     }
 
-    public List<ProductDto> getProductsByCategory(String category) {
+    public Page<ProductDto> getProductsByCategory(String category, Pageable pageable) {
         CategoryType categoryType = CategoryType.fromString(category)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + category));
 
         log.info("Searching products by category: {}", categoryType);
 
-        return productMapper.toDtoList(productRepository.findByCategory(categoryType));
+        Page<Product> products = productRepository.findByCategory(categoryType, pageable);
+        return products.map(productMapper::toDto);
     }
 
     public ProductDto getProductByTitle(String title) {
@@ -93,17 +96,11 @@ public class ProductService {
         return productMapper.toDto(productRepository.findByTitle(title));
     }
 
-    public Iterable<ProductDto> getProductsByPriceBetweenRange(BigDecimal minPrice, BigDecimal maxPrice) throws Exception {
+    public Page<ProductDto> getProductsByPriceBetweenRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) throws Exception {
         if (minPrice == null || maxPrice == null || minPrice.compareTo(maxPrice) > 0) {
             throw new Exception("Invalid price range");
         }
-        return productMapper.toDtoIterable(productRepository.findByPriceBetween(minPrice, maxPrice));
+        Page<Product> products = productRepository.findByPriceBetween(minPrice, maxPrice, pageable);
+        return products.map(productMapper::toDto);
     }
-
-
-    // TODO: Pagination
-    //    public Page<Product> findProductsByCategory(String category, Pageable pageable) {
-    //        return productRepository.findProductsByCategory(CategoryType.valueOf(category), pageable);
-    //    }
-
 }
