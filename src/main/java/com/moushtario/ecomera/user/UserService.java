@@ -3,11 +3,13 @@ package com.moushtario.ecomera.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Youssef
@@ -59,11 +61,11 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    public User getUserById(int id) {
+    public User getUserById(UUID id) {
         return userRepository.findById(id).orElse(null);
     }
 
-    public void deleteUser(int id) {
+    public void deleteUser(UUID id) {
         userRepository.deleteById(id);
     }
 
@@ -74,7 +76,7 @@ public class UserService {
     public List<String> getConnectedUserRoles(Principal connectedUser) {
         return getConnectedUser(connectedUser).getAuthorities()
                 .stream()
-                .map(role -> role.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .toList();
     }
 }

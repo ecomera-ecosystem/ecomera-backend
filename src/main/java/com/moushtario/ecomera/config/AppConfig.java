@@ -5,7 +5,7 @@ import com.moushtario.ecomera.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableJpaRepositories(basePackages = {"com.moushtario.ecomera.user", "com.moushtario.ecomera.token", "com.moushtario.ecomera.mvc.repository"})
 public class AppConfig {
 
     private final UserRepository userRepository;
@@ -87,7 +88,7 @@ public class AppConfig {
     }
 
     @Bean
-    public AuditorAware<Integer> auditorAware() {
+    public ApplicationAuditAware auditorAware() {
         return new ApplicationAuditAware();
     }
 

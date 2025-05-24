@@ -3,6 +3,7 @@ package com.moushtario.ecomera.user;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Youssef
@@ -10,6 +11,6 @@ import java.util.Optional;
  * @created 13/04/2025
  * @lastModified 13/04/2025
  */
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 }

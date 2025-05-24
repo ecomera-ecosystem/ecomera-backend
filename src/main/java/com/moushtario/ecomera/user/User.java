@@ -17,12 +17,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Youssef
  * @version 2.1
  * @created 11/04/2025
- * @lastModified 20/05/2025
+ * @lastModified 24/05/2025
  */
 
 @Getter
@@ -36,8 +37,8 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue
-    private int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String firstName;
@@ -75,7 +76,7 @@ public class User implements UserDetails {
     protected int createdBy;
 
     @CreatedDate
-    @Column(nullable = true, updatable = false)
+    @Column(updatable = false)
     protected LocalDateTime createdDate;
 
     @LastModifiedBy
@@ -94,6 +95,7 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
+
     @Override
     public String getUsername() {
         return email;
