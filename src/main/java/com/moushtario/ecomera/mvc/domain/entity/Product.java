@@ -1,11 +1,14 @@
 package com.moushtario.ecomera.mvc.domain.entity;
 
-import com.moushtario.ecomera.mvc.base.BaseEntity;
 import com.moushtario.ecomera.mvc.domain.enums.CategoryType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 @AllArgsConstructor
@@ -13,8 +16,18 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-public class Product extends BaseEntity {
+public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
     private String title;
 
     @Column(columnDefinition = "TEXT")
