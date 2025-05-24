@@ -45,5 +45,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             @Digits(integer = 10, fraction = 2,
                     message = "The maximum Price must have up to 10 digits and 2 decimal places") BigDecimal maxPrice,
             Pageable pageable);
+
+    long countProductsByCategory(CategoryType category);
 }
 

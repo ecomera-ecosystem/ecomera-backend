@@ -73,6 +73,13 @@ public class ProductService {
         return productRepository.count();
     }
 
+    public long countProductsByCategory(String category) {
+        CategoryType categoryType = CategoryType.fromString(category)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + category));
+
+        return productRepository.countProductsByCategory(categoryType);
+    }
+
     // Search
     public Page<ProductDto> searchProducts(String query, Pageable pageable) {
         Page<Product> products =  productRepository.searchProducts(query, pageable);

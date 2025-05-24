@@ -46,8 +46,11 @@ public class ProductController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long> getProductCount() {
-        return ResponseEntity.ok(productService.countProducts());
+    public ResponseEntity<Long> getProductCount(@RequestParam String category) {
+        if (category == null || category.isEmpty()) {
+            return ResponseEntity.ok(productService.countProducts());
+        }
+        return ResponseEntity.ok(productService.countProductsByCategory(category));
     }
 
     @PutMapping("/{id}")
