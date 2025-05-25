@@ -1,6 +1,7 @@
 package com.moushtario.ecomera.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.moushtario.ecomera.mvc.domain.entity.Order;
 import com.moushtario.ecomera.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
@@ -63,6 +64,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Token> tokens;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<Order> orders;
 
     @CreationTimestamp
     @Column(updatable = false)
