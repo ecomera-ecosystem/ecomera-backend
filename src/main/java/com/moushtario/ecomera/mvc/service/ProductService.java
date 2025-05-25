@@ -1,6 +1,6 @@
 package com.moushtario.ecomera.mvc.service;
 
-import com.moushtario.ecomera.mapper.ProductMapper;
+import com.moushtario.ecomera.mvc.domain.mapper.ProductMapper;
 import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
 import com.moushtario.ecomera.mvc.domain.entity.Product;
 import com.moushtario.ecomera.mvc.domain.enums.CategoryType;

@@ -1,4 +1,4 @@
-package com.moushtario.ecomera.mapper;
+package com.moushtario.ecomera.mvc.domain.mapper;
 
 import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
 import com.moushtario.ecomera.mvc.domain.entity.Product;
