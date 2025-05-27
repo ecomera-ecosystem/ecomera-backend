@@ -1,20 +1,18 @@
 package com.moushtario.ecomera.mvc.domain.entity;
 
-
-import com.moushtario.ecomera.mvc.domain.enums.OrderStatus;
-import com.moushtario.ecomera.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * Entity representing an Order in the e-commerce application.
+ * Entity representing an OrderItem in the e-commerce application.
  */
 @Builder
 @AllArgsConstructor
@@ -22,31 +20,32 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "\"orders\"")
-public class Order {
+public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status;
-
     @Column(precision = 10, scale = 2, nullable = false)
-    private BigDecimal totalPrice;
+    private BigDecimal unitPrice;
+
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private int quantity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime orderDate;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItem;
-
 }
