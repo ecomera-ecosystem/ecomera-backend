@@ -29,7 +29,7 @@ public interface OrderMapper {
                 null;
     }
     // Order - User conversion methods
-    // Extract a user_id from a user object
+    // Get User object from a user_id
     default User toUser(UUID userId) {
         if (userId == null) {
             return null;
@@ -38,7 +38,7 @@ public interface OrderMapper {
         user.setId(userId);
         return user;
     }
-    // Get User object from a user_id
+    // Extract a user_id from a user object
     default UUID toUserId(User user){
         return user!= null ? user.getId() : null;
     }
