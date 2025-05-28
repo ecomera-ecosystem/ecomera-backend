@@ -1,4 +1,6 @@
-package com.moushtario.ecomera.mvc.domain.dto;
+package com.moushtario.ecomera.mvc.domain.dto.product;
+
+import com.moushtario.ecomera.mvc.domain.entity.Product;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,15 +12,15 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * DTO for {@link com.moushtario.ecomera.mvc.domain.entity.Product}
+ * Read DTO for {@link Product}
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
 public class ProductDto {
-    private UUID id;         // Matches BaseEntity
-    private String title;    // Matches Product.title
+    private UUID id;
+    private String title;
     private String description;
     private String imageUrl;
     private BigDecimal price;
@@ -26,7 +28,7 @@ public class ProductDto {
     private String category; // Will map to/from CategoryType enum
 
     // Optional: For better API responses
-    private LocalDateTime createdAt; // From BaseEntity
-    private LocalDateTime updatedAt; // From BaseEntity
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

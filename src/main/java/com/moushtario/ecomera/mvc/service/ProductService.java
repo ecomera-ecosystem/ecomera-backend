@@ -1,14 +1,19 @@
 package com.moushtario.ecomera.mvc.service;
 
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductCreateDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductUpdateDto;
 import com.moushtario.ecomera.mvc.domain.mapper.ProductMapper;
-import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductDto;
 import com.moushtario.ecomera.mvc.domain.entity.Product;
 import com.moushtario.ecomera.mvc.domain.enums.CategoryType;
 import com.moushtario.ecomera.mvc.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +33,7 @@ public class ProductService {
         return productRepository.existsById(id);
     }
 
-    public ProductDto saveProduct(ProductDto dto) {
+    public ProductDto saveProduct(ProductCreateDto dto) {
         /*
         // Convert ProductDto to Product entity
 //        Product product = Product.builder()
@@ -47,6 +52,18 @@ public class ProductService {
         return productMapper.toDto(productRepository.save(product));
     }
 
+
+    public ProductDto update(UUID id, ProductUpdateDto dto) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        productMapper.updateProductFromDto(dto, product);
+
+        Product updated = productRepository.save(product);
+        return productMapper.toDto(updated);
+    }
+
+
     public ProductDto getProductById(UUID id) {
         return productRepository.findById(id)
                 .map(productMapper::toDto)
@@ -60,7 +77,13 @@ public class ProductService {
      * @return List of products
      */
     @Transactional(readOnly = true)
-    public Page<ProductDto> getAllProducts(Pageable pageable) {
+    public Page<ProductDto> getAllProducts(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         Page<Product> products = productRepository.findAll(pageable);
         return products.map(productMapper::toDto);
     }

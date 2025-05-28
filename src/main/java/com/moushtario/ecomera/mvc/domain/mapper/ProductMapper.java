@@ -1,11 +1,12 @@
 package com.moushtario.ecomera.mvc.domain.mapper;
 
-import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductCreateDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductUpdateDto;
 import com.moushtario.ecomera.mvc.domain.entity.Product;
 import com.moushtario.ecomera.mvc.domain.enums.CategoryType;
 //import org.mapstruct.InheritInverseConfiguration;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -27,7 +28,15 @@ public interface ProductMapper {
     @Mapping(target = "createdAt", ignore = true)   // Auto-populated
     @Mapping(target = "updatedAt", ignore = true)   // Auto-populated
     @Mapping(target = "category", expression = "java(mapCategory(dto.getCategory()))")
-    Product toEntity(ProductDto dto);
+    Product toEntity(ProductCreateDto dto);
+
+    // ProductUpdateDto → Existing Product (for patch partial update)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "category", expression = "java(mapCategory(dto.getCategory()))")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateProductFromDto(ProductUpdateDto dto, @MappingTarget Product product);
 
     // Custom enum conversion
     default CategoryType mapCategory(String category) {

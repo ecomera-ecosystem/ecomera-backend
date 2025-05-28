@@ -1,6 +1,8 @@
 package com.moushtario.ecomera.mvc.controller;
 
-import com.moushtario.ecomera.mvc.domain.dto.ProductDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductCreateDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductDto;
+import com.moushtario.ecomera.mvc.domain.dto.product.ProductUpdateDto;
 import com.moushtario.ecomera.mvc.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,19 +23,19 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDTO) {
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductCreateDto productDTO) {
         ProductDto product = productService.saveProduct(productDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDto>> getProducts(
+    public ResponseEntity<Page<ProductDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDto> productsPage = productService.getAllProducts(pageable);
-        return ResponseEntity.ok(productsPage);
+        return ResponseEntity.ok(productService.getAllProducts(page, size, sortBy, direction));
     }
 
     @GetMapping("/{id}")
@@ -53,14 +55,9 @@ public class ProductController {
         return ResponseEntity.ok(productService.countProductsByCategory(category));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable UUID id, @RequestBody ProductDto productDTO) {
-        if(!productService.isExists(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        productDTO.setId(id);
-        ProductDto updatedProduct = productService.saveProduct(productDTO);
-        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable UUID id, @RequestBody ProductUpdateDto dto) {
+        return ResponseEntity.ok(productService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
