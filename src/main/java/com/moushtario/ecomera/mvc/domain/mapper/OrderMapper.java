@@ -1,25 +1,33 @@
 package com.moushtario.ecomera.mvc.domain.mapper;
 
-import com.moushtario.ecomera.mvc.domain.dto.OrderDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderCreateDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderUpdateDto;
 import com.moushtario.ecomera.mvc.domain.entity.Order;
 import com.moushtario.ecomera.mvc.domain.enums.OrderStatus;
 import com.moushtario.ecomera.user.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
 public interface OrderMapper {
 
-    @Mapping(target = "updatedAt", ignore = true)   // Auto-populated
-    @Mapping(target = "status", expression = "java(mapStatus(orderDto.getStatus()))")
-    @Mapping(source = "userId", target = "user")
-    @Mapping(target = "orderDate" ) // Auto-populated
-    Order toEntity(OrderDto orderDto);
-
-    @Mapping(source = "user", target = "userId") // Map user entity to userId
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "orderItem", target = "orderItems")
     OrderDto toDto(Order order);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "orderItem", ignore = true)
+    @Mapping(target = "orderDate", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "totalPrice", ignore = true)
+    @Mapping(target = "status", constant = "PENDING") // default status
+    Order toEntity(OrderCreateDto dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(OrderUpdateDto dto, @MappingTarget Order order);
 
 
     // Custom enum conversion to map String to OrderStatus

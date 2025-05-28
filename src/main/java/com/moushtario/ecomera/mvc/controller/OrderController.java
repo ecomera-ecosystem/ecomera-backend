@@ -1,6 +1,8 @@
 package com.moushtario.ecomera.mvc.controller;
 
-import com.moushtario.ecomera.mvc.domain.dto.OrderDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderCreateDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderDto;
+import com.moushtario.ecomera.mvc.domain.dto.order.OrderUpdateDto;
 import com.moushtario.ecomera.mvc.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,19 +22,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDto) {
-        OrderDto savedOrder = orderService.saveOrder(orderDto);
+    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderCreateDto orderDto) {
+        OrderDto savedOrder = orderService.create(orderDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderDto> updateOrder(@PathVariable UUID id, @RequestBody OrderDto orderDto) {
-        if(!orderService.isExists(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        OrderDto updatedOrder = orderService.saveOrder(orderDto);
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<OrderDto> update(@PathVariable UUID id, @RequestBody OrderUpdateDto dto) {
+        return ResponseEntity.ok(orderService.updateStatus(id, dto));
     }
 
     @DeleteMapping("/{id}")
