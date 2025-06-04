@@ -3,16 +3,20 @@ package com.moushtario.ecomera.auth.controller;
 
 import com.moushtario.ecomera.auth.dto.AuthenticationRequest;
 import com.moushtario.ecomera.auth.dto.AuthenticationResponse;
+import com.moushtario.ecomera.auth.dto.CurrentUserDto;
 import com.moushtario.ecomera.auth.service.AuthenticationService;
 import com.moushtario.ecomera.auth.dto.RegisterRequest;
+import com.moushtario.ecomera.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.security.Principal;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ import java.security.Principal;
 public class AuthenticationController {
 
     private final AuthenticationService authService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
@@ -40,9 +45,28 @@ public class AuthenticationController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<String> me(HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        return ResponseEntity.ok(principal.getName());
+    public ResponseEntity<CurrentUserDto> me(HttpServletRequest request) {
+        var principal = request.getUserPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = principal.getName(); // Comes from JWT
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        var dto = CurrentUserDto.builder()
+                .id(user.getId().toString())
+                .email(user.getEmail())
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .role(user.getRole().name())
+                .lastLogin( user.getLastLogin() != null ? user.getLastLogin().toString()
+                        : LocalDateTime.now().toString())
+                .ipAddress(user.getIpAddress())
+                .build();
+
+        return ResponseEntity.ok(dto);
     }
 
     private String getClientIpFromRequest(HttpServletRequest request) {
