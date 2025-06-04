@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,6 +37,12 @@ public class AuthenticationController {
 
         authService.updateLastLogin(request.getEmail(), clientIp);
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<String> me(HttpServletRequest request) {
+        Principal principal = request.getUserPrincipal();
+        return ResponseEntity.ok(principal.getName());
     }
 
     private String getClientIpFromRequest(HttpServletRequest request) {
