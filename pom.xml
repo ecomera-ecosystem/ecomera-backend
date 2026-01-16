@@ -8,23 +8,32 @@
         <version>3.5.9</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.moushtario</groupId>
+    <groupId>com.youssef</groupId>
     <artifactId>ecomera</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Ecomera Backend</name>
     <description>Spring Boot backend for an e-commerce application</description>
-    <url/>
+    <url>https://ecomera.vercel.app</url>
     <licenses>
-        <license/>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <id>am-ysf</id>
+            <name>Youssef Ammari</name>
+            <email>youssef.ammari.795@gmail.com</email>
+            <url>https://github.com/Ammari-Youssef</url>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:git://github.com/ecomera-ecosystem/ecomera-backend.git</connection>
+        <developerConnection>scm:git:ssh://github.com/ecomera-ecosystem/ecomera-backend.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/ecomera-ecosystem/ecomera-backend</url>
     </scm>
     <properties>
         <java.version>17</java.version>
