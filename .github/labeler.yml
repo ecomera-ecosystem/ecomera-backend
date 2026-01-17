@@ -10,6 +10,12 @@ security:
   - title: [ "security", "jwt", "vulnerability" ]
   - body: [ "xss", "csrf", "sql injection" ]
 
+codeql:
+  - changed-files:
+      - any-glob-to-any-file: [ ".github/workflows/codeql.yml", ".github/workflows/codeql-advanced.yml" ]
+  - title: [ "codeql", "security scan", "static analysis" ]
+  - body: [ "codeql", "security scan", "static analysis", "github code scanning" ]
+
 # --- API & Domain ---
 api:
   - changed-files:
