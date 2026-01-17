@@ -1,3 +1,4 @@
+# this workflow uploads global Qodana configurations to Qodana Cloud
 name: Qodana Configuration Upload
 
 on:
