@@ -1,0 +1,179 @@
+# Auto-label rules for PRs and Issues
+# --- Auth & Security ---
+auth:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/java/**/auth/**", "src/main/java/**/security/**" ]
+
+security:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/java/**/auth/**", "src/main/java/**/security/**" ]
+  - title: [ "security", "jwt", "vulnerability" ]
+  - body: [ "xss", "csrf", "sql injection" ]
+
+codeql:
+  - changed-files:
+      - any-glob-to-any-file: [ ".github/workflows/codeql.yml", ".github/workflows/codeql-advanced.yml" ]
+  - title: [ "codeql", "security scan", "static analysis" ]
+  - body: [ "codeql", "security scan", "static analysis", "github code scanning" ]
+
+# --- API & Domain ---
+api:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/java/**/controller/**", "src/main/java/**/domain/**" ]
+  - title: [ "api", "endpoint", "swagger", "openapi" ]
+
+refactor:
+  - title: [ "refactor", "cleanup", "restructure" ]
+  - body: [ "refactor", "cleanup", "restructure" ]
+
+enhancement:
+  - title: [ "feature", "enhancement", "improve" ]
+  - body: [ "add", "support", "extend" ]
+
+# --- Database ---
+database:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/resources/db/**", "src/main/java/**/repository/**" ]
+
+liquibase:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/resources/db/changelog/**", "src/main/resources/liquibase/**", "**/db/changelog-*.xml" ]
+  - title: [ "liquibase", "migration", "changelog" ]
+  - body: [ "liquibase", "migration", "changelog", "rollback" ]
+
+redis:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/java/**/cache/**", "src/main/resources/redis/**", "redis.conf", "docker/redis/**" ]
+  - title: [ "redis", "cache" ]
+  - body: [ "redis", "cache", "in-memory" ]
+
+postgres:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/main/resources/db/**", "src/main/java/**/repository/**", "docker/postgres/**", "postgresql.conf" ]
+  - title: [ "postgres", "postgresql", "database" ]
+  - body: [ "postgres", "sql", "migration", "schema" ]
+
+# --- CI/CD & Infra ---
+ci-cd:
+  - changed-files:
+      - any-glob-to-any-file: [ ".github/workflows/**", "Dockerfile", "docker-compose.yml" ]
+
+qodana:
+  - changed-files:
+      - any-glob-to-any-file: [ ".github/workflows/qodana.yml", "qodana.yaml" ]
+  - title: [ "qodana", "static analysis", "code quality" ]
+  - body: [ "qodana", "inspection", "lint", "static analysis", "code quality", "jetbrains" ]
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file: [ "Dockerfile", "docker-compose.yml", "**/Dockerfile", "**/docker-compose.yml" ]
+  - title: [ "docker", "container", "image" ]
+  - body: [ "docker", "containerize", "build image", "compose" ]
+
+deployment:
+  - changed-files:
+      - any-glob-to-any-file: [ "vercel.json", "railway.json", "infra/**" ]
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file: [ "infra/**", ".github/workflows/**" ]
+
+github-actions:
+  - changed-files:
+      - any-glob-to-any-file: [ ".github/workflows/**", ".github/**" ]
+
+# --- Testing & Performance ---
+testing:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/test/**", "frontend/**/*.spec.ts", "frontend/e2e/**" ]
+
+performance:
+  - title: [ "performance", "optimize", "slow", "latency" ]
+  - body: [ "optimize", "cache", "profiling" ]
+
+testcontainers:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/test/java/**/Testcontainers*/**", "src/test/java/**/integration/**" ]
+  - title: [ "testcontainers", "integration test" ]
+  - body: [ "testcontainers", "dockerized test", "container test" ]
+
+junit:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/test/java/**", "**/*Test.java" ]
+  - title: [ "junit", "unit test" ]
+  - body: [ "junit", "@Test", "assertEquals", "assertTrue" ]
+
+mockito:
+  - changed-files:
+      - any-glob-to-any-file: [ "src/test/java/**", "src/test/java/**/mock/**" ]
+  - title: [ "mockito", "mock", "stub" ]
+  - body: [ "mockito", "mock", "stub", "when()", "verify()" ]
+
+# --- Documentation ---
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: [ "docs/**", "README.md" ]
+  - title: [ "docs", "documentation", "readme" ]
+
+# --- Generic Workflow Labels ---
+bug:
+  - title: [ "bug", "error", "fail" ]
+  - body: [ "unexpected", "crash", "stacktrace" ]
+
+question:
+  - title: [ "question", "how", "what", "why" ]
+  - body: [ "clarify", "explain" ]
+
+help wanted:
+  - title: [ "help", "support" ]
+  - body: [ "need help", "assist" ]
+
+good first issue:
+  - title: [ "good first issue", "beginner" ]
+  - body: [ "easy", "starter" ]
+
+blocked:
+  - title: [ "blocked", "dependency", "waiting" ]
+
+ready-for-review:
+  - title: [ "ready for review", "finished" ]
+
+release:
+  - title: [ "release", "tag", "version" ]
+
+duplicate:
+  - title: [ "duplicate" ]
+
+invalid:
+  - title: [ "invalid" ]
+
+wontfix:
+  - title: [ "wontfix" ]
+
+# --- Priority Labels ---
+high-priority:
+  - title: [ "high priority", "urgent", "critical" ]
+  - body: [ "urgent", "critical", "blocker", "asap", "immediate" ]
+
+medium-priority:
+  - title: [ "medium priority" ]
+  - body: [ "medium priority", "normal", "standard", "moderate" ]
+
+low-priority:
+  - title: [ "low priority" ]
+  - body: [ "low priority", "minor", "low impact", "non-urgent", "nice to have" ]
+
+# --- Sprint Labels ---
+sprint-0:
+  - title: [ "sprint-0", "Setup", "Restructure" ]
+  - body: [ "initial setup", "project setup", "setup", "foundation", "initial", "restructure" ]
+sprint-1:
+  - title: [ "sprint-1" ]
+sprint-2:
+  - title: [ "sprint-2" ]
+sprint-3:
+  - title: [ "sprint-3" ]
+sprint-4:
+  - title: [ "sprint-4" ]
+sprint-5:
+  - title: [ "sprint-5" ]

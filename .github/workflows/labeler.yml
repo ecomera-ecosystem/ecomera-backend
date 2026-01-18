@@ -1,0 +1,37 @@
+name: GitHub Labeler
+
+on:
+  pull_request_target:
+  issues:
+    types: [opened, edited, reopened]
+  schedule:
+    - cron: "0 0 * * 1"
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Apply labels to PRs and Issues
+        uses: actions/labeler@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+
+  label-previous:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Label specific past PRs
+        uses: actions/labeler@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-number: |
+            10 # first PR
+
+          sync-labels: true
