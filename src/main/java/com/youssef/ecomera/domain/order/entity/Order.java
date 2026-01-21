@@ -1,56 +1,49 @@
 package com.youssef.ecomera.domain.order.entity;
 
 
+import com.youssef.ecomera.common.audit.BaseEntity;
 import com.youssef.ecomera.domain.payment.entity.Payment;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import com.youssef.ecomera.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-/**
- * Entity representing an Order in the e-commerce application.
- */
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "\"orders\"")
-public class Order {
+@Table(name = "orders")
+public class Order extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
+    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @NotNull
+    @DecimalMin(value = "0.00", message = "Total price must be positive")
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime orderDate;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-
-    @ManyToOne
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItem;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
-
 }

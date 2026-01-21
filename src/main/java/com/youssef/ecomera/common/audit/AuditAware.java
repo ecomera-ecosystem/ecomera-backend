@@ -1,40 +1,28 @@
 package com.youssef.ecomera.common.audit;
 
-import com.youssef.ecomera.user.entity.User;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
-import java.util.UUID;
 
+public class AuditAware implements AuditorAware<String> {
 
-public class AuditAware implements AuditorAware<UUID> {
-
-    /**
-     * Returns the current auditor.
-     * who is a logged-in user that is performing the action
-     * Needed to populate the createdBy and lastModifiedBy fields in your entities
-     *
-     * @return the current auditor id or null if not authenticated
-     */
     @Override
     @NonNull
-    public Optional<UUID> getCurrentAuditor() {
-        Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
-        if (authentication == null ||
-                !authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken
-        ) {
-            return Optional.empty();
+    public Optional<String> getCurrentAuditor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken || auth.getPrincipal().equals("anonymousUser")) {
+            return Optional.of("system");
+        }
+        if (auth.getPrincipal() instanceof UserDetails userDetails) {
+            return Optional.of(userDetails.getUsername());
         }
 
-        User userPrincipal = (User) authentication.getPrincipal();
-        return Optional.ofNullable(userPrincipal.getId());
+        return Optional.of(auth.getName());
     }
 }

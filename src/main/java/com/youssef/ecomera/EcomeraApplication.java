@@ -7,13 +7,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import static com.youssef.ecomera.user.entity.enums.Role.*;
 
 @Slf4j
 @SpringBootApplication
-@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class EcomeraApplication {
 
     public static void main(String[] args) {

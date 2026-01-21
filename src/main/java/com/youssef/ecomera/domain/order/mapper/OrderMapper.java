@@ -14,13 +14,13 @@ import java.util.UUID;
 public interface OrderMapper {
 
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "orderItem", target = "orderItems")
+    @Mapping(source = "orderItems", target = "orderItems")
     OrderDto toDto(Order order);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "orderItem", ignore = true)
-    @Mapping(target = "orderDate", ignore = true)
+    @Mapping(target = "orderItems", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "totalPrice", ignore = true)
     @Mapping(target = "status", constant = "PENDING") // default status
