@@ -1,7 +1,9 @@
 package com.youssef.ecomera.common.audit;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @SuperBuilder
+@NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity implements Serializable {
@@ -29,16 +32,18 @@ public abstract class BaseEntity implements Serializable {
     private UUID id;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @CreatedBy
+    @Column(nullable = false, updatable = false)
     private String createdBy;
 
     @LastModifiedBy
-    private String lastModifiedBy;
+    @Column(nullable = false)
+    private String updatedBy;
 }
-
