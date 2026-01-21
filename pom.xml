@@ -6,14 +6,16 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.9</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
+
     <groupId>com.youssef</groupId>
     <artifactId>ecomera</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Ecomera Backend</name>
     <description>Spring Boot backend for an e-commerce application</description>
     <url>https://ecomera.vercel.app</url>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -21,6 +23,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <developers>
         <developer>
             <id>am-ysf</id>
@@ -29,26 +32,61 @@
             <url>https://github.com/Ammari-Youssef</url>
         </developer>
     </developers>
+
     <scm>
         <connection>scm:git:git://github.com/ecomera-ecosystem/ecomera-backend.git</connection>
         <developerConnection>scm:git:ssh://github.com/ecomera-ecosystem/ecomera-backend.git</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/ecomera-ecosystem/ecomera-backend</url>
     </scm>
+
     <properties>
+        <!-- Java Version -->
         <java.version>17</java.version>
+
+        <!-- Core Library Versions -->
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.42</lombok.version>
-        <jacoco.version>0.8.14</jacoco.version>
-        <liquibase.version>5.0.1</liquibase.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <datafaker.version>2.5.2</datafaker.version>
+
+        <!-- Security -->
         <jwt.version>0.13.0</jwt.version>
+
+        <!-- Database -->
+        <liquibase.version>5.0.1</liquibase.version>
+
+        <!-- Documentation -->
+        <springdoc.version>2.8.15</springdoc.version>
+
+        <!-- Testing -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <rest-assured.version>5.5.0</rest-assured.version>
+
+        <!-- Build Plugins -->
+        <jacoco.version>0.8.14</jacoco.version>
+
+        <!-- Spring Modulith -->
+        <spring-modulith.version>1.4.6</spring-modulith.version>
     </properties>
+
     <dependencyManagement>
         <dependencies>
+            <!-- TestContainers BOM -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
-                <version>2.0.3</version>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Modulith BOM -->
+            <dependency>
+                <groupId>org.springframework.modulith</groupId>
+                <artifactId>spring-modulith-bom</artifactId>
+                <version>${spring-modulith.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -56,7 +94,9 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Spring Boot Starters -->
+        <!-- ============================================ -->
+        <!-- Spring Boot Web & REST -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -67,20 +107,65 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
+            <artifactId>spring-boot-starter-hateoas</artifactId>
         </dependency>
 
-        <!-- Database -->
+        <!-- ============================================ -->
+        <!-- Spring Modulith (Modular Monolith) -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-core</artifactId>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Data & Persistence -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- 		JWT dependencies -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Redis & Caching -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Kafka (Event-Driven Architecture) -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Security & Authentication -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -90,14 +175,65 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <version>${jwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
             <version>${jwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
+        <!-- ============================================ -->
+        <!-- Documentation & API -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Monitoring & Observability -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ============================================ -->
+        <!-- Utility Libraries -->
+        <!-- ============================================ -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>${datafaker.version}</version>
+        </dependency>
+
+        <!-- ============================================ -->
         <!-- Development Tools -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -109,30 +245,10 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.15</version>
-        </dependency>
 
-        <!-- Utility Libraries -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>2.5.2</version>
-        </dependency>
-
-        <!-- Test Dependencies -->
+        <!-- ============================================ -->
+        <!-- Testing Dependencies -->
+        <!-- ============================================ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -144,26 +260,59 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- H2 for in-memory testing -->
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- TestContainers for integration testing -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Monitoring & Observability -->
+        <!-- REST Assured for API testing -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
-            <!-- Compiler / MapStruct / Lombok -->
+            <!-- ============================================ -->
+            <!-- Compiler Plugin (Lombok + MapStruct) -->
+            <!-- ============================================ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -183,17 +332,18 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
-                        </path>
-                        <path>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${lombok-mapstruct-binding.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot -->
+            <!-- ============================================ -->
+            <!-- Spring Boot Plugin -->
+            <!-- ============================================ -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -214,7 +364,9 @@
                 </configuration>
             </plugin>
 
+            <!-- ============================================ -->
             <!-- JaCoCo Code Coverage -->
+            <!-- ============================================ -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -230,6 +382,65 @@
                         <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <!-- Coverage check disabled during infrastructure setup -->
+                    <!-- Will enable in Sprint 1 with realistic thresholds -->
+                    <!-- TODO: Enable in Sprint 1 with 30% threshold after writing initial tests -->
+                    <!--                    <execution>-->
+                    <!--                        <id>check</id>-->
+                    <!--                        <goals>-->
+                    <!--                            <goal>check</goal>-->
+                    <!--                        </goals>-->
+                    <!--                        <configuration>-->
+                    <!--                            <rules>-->
+                    <!--                                <rule>-->
+                    <!--                                    <element>PACKAGE</element>-->
+                    <!--                                    <limits>-->
+                    <!--                                        <limit>-->
+                    <!--                                            <counter>LINE</counter>-->
+                    <!--                                            <value>COVEREDRATIO</value>-->
+                    <!--                                            <minimum>0.70</minimum>-->
+                    <!--                                        </limit>-->
+                    <!--                                    </limits>-->
+                    <!--                                </rule>-->
+                    <!--                            </rules>-->
+                    <!--                        </configuration>-->
+                    <!--                    </execution>-->
+                </executions>
+            </plugin>
+
+            <!-- ============================================ -->
+            <!-- Surefire (Unit Tests) -->
+            <!-- ============================================ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- ============================================ -->
+            <!-- Failsafe (Integration Tests) -->
+            <!-- ============================================ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
