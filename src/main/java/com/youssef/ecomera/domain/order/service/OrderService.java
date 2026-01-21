@@ -50,7 +50,7 @@ public class OrderService {
             return item;
         }).toList();
 
-        order.setOrderItem(items);
+        order.setOrderItems(items);
 
         BigDecimal total = items.stream()
                 .map(it -> it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
@@ -92,7 +92,7 @@ public class OrderService {
 
     public void deleteOrderById(UUID orderId) {
         if (!orderRepository.existsById(orderId)) {
-            throw new RuntimeException("Order not found");
+            throw new RuntimeException("Order not found"); // TODO: Custom Exception in issue #5
         }
         orderRepository.deleteById(orderId);
     }
