@@ -1,44 +1,38 @@
 package com.youssef.ecomera.auth.entity;
 
 import com.youssef.ecomera.auth.enums.TokenType;
+import com.youssef.ecomera.common.audit.BaseEntity;
 import com.youssef.ecomera.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 
-@Builder
 @Getter
 @Setter
-@AllArgsConstructor
+@SuperBuilder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
-public class Token {
+@Table(name = "token")
+public class Token extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    public Integer id;
-
-    @Column(unique = true)
-    public String token;
+    @NotBlank
+    @Column(unique = true, nullable = false, length = 500)
+    private String value;
 
     @Enumerated(EnumType.STRING)
-    public TokenType tokenType = TokenType.BEARER;
+    @Column(nullable = false, length = 20)
+    private TokenType tokenType;
 
-    public boolean revoked;
+    @Column(nullable = false)
+    private boolean revoked;
 
-    public boolean expired;
+    @Column(nullable = false)
+    private boolean expired;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    public User user;
-
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
