@@ -61,7 +61,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
            // Check if the token is not expired nor revoked, ensuring only active tokens are allowed through the authentication filter.
-           boolean isTokenActive = tokenRepository.findByToken(jwt)
+           boolean isTokenActive = tokenRepository.findByValue(jwt)
                    .map(token -> !token.isExpired() && !token.isRevoked())
                    .orElse(false); // Check if the token is valid and not revoked
 

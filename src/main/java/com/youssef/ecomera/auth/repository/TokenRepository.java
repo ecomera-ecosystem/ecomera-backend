@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Long> {
-    Optional<Token> findByToken(String token);
+    Optional<Token> findByValue(String token);
 
     @Query("""
             SELECT t FROM Token t INNER JOIN User u ON t.user.id = u.id

@@ -26,7 +26,7 @@ public class LogoutService implements LogoutHandler {
         jwt = authHeader.substring(7); // Extract the json web token by removing "Bearer " prefix
 
         // Check if the token is present in the database and bring it in
-        var storedToken = tokenRepository.findByToken(jwt).orElse(null);
+        var storedToken = tokenRepository.findByValue(jwt).orElse(null);
         // If the token is present, set it as expired and revoked
         if(storedToken != null) {
             storedToken.setExpired(true);
