@@ -1,105 +1,76 @@
 package com.youssef.ecomera.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.youssef.ecomera.common.audit.BaseEntity;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.user.entity.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
-
-/**
- * @author Youssef
- * @version 2.1
- * @created 11/04/2025
- * @lastModified 24/05/2025
- */
 
 @Getter
 @Setter
-@RequiredArgsConstructor
-@Builder
+@SuperBuilder
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
-@EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false)
+    @NotBlank(message = "First name is required")
+    @Size(max = 100)
+    @Column(nullable = false, length = 100)
     private String firstName;
-    @Column(nullable = false)
+
+    @NotBlank(message = "Last name is required")
+    @Size(max = 100)
+    @Column(nullable = false, length = 100)
     private String lastName;
 
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    @Size(max = 255)
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private Role role;
 
     @Column
     private LocalDateTime lastLogin;
 
-    @Column
+    @Size(max = 45)
+    @Column(length = 45)
     private String ipAddress;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Token> tokens;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Order> orders;
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-
-    // Auditing fields
-    @CreatedBy
-    protected int createdBy;
-
-    @CreatedDate
-    @Column(updatable = false)
-    protected LocalDateTime createdDate;
-
-    @LastModifiedBy
-    protected int lastModifiedBy;
-
-    @LastModifiedDate
-    protected LocalDateTime lastModifiedDate;
-
-
+    // Spring Security UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getAuthorities();
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     @Override
