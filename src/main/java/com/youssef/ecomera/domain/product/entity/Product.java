@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "products")
+@Table(name = "product")
 public class Product extends BaseEntity {
 
     @NotBlank(message = "Title is required")

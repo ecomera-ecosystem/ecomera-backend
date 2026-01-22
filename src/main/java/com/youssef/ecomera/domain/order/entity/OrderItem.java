@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-@Table(name = "order_items")
+@Table(name = "order_item")
 public class OrderItem extends BaseEntity {
 
     @NotNull(message = "Unit price is required")
