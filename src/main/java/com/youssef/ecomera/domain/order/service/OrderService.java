@@ -1,5 +1,6 @@
 package com.youssef.ecomera.domain.order.service;
 
+import com.youssef.ecomera.common.exception.ResourceNotFoundException;
 import com.youssef.ecomera.domain.order.dto.order.OrderCreateDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderUpdateDto;
@@ -11,7 +12,6 @@ import com.youssef.ecomera.domain.order.mapper.OrderMapper;
 import com.youssef.ecomera.domain.order.repository.OrderRepository;
 import com.youssef.ecomera.domain.product.repository.ProductRepository;
 import com.youssef.ecomera.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,30 +21,57 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
+import com.youssef.ecomera.common.exception.BusinessException;
+
+import com.youssef.ecomera.user.entity.User;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OrderService {
+
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
 
+    @Transactional
     public OrderDto create(OrderCreateDto dto) {
-        var user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        // Validate request
+        if (dto.getItems() == null || dto.getItems().isEmpty()) {
+            throw new BusinessException("Cannot create order with empty cart");
+        }
 
+        // Find user
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", dto.getUserId()));
+
+        // Map DTO to entity
         Order order = orderMapper.toEntity(dto);
         order.setUser(user);
 
-        // Build OrderItems and calculate total
+        // Build OrderItems and validate stock
         List<OrderItem> items = dto.getItems().stream().map(itemDto -> {
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.getProductId()));
 
+            // Validate stock availability
+            if (product.getStock() < itemDto.getQuantity()) {
+                throw new BusinessException(
+                        String.format("Insufficient stock for product '%s'. Available: %d, Requested: %d",
+                                product.getTitle(), product.getStock(), itemDto.getQuantity())
+                );
+            }
+
+            // Map to OrderItem
             OrderItem item = orderItemMapper.toEntity(itemDto);
             item.setProduct(product);
-            item.setOrder(order); // set back-reference
+            item.setOrder(order);
             item.setUnitPrice(product.getPrice());
 
             return item;
@@ -52,27 +79,39 @@ public class OrderService {
 
         order.setOrderItems(items);
 
-        BigDecimal total = items.stream()
-                .map(it -> it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
+        // Calculate total price
+        BigDecimal totalPrice = items.stream()
+                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        order.setTotalPrice(total);
+        order.setTotalPrice(totalPrice);
 
-        return orderMapper.toDto(orderRepository.save(order));
+        // Save and return
+        Order savedOrder = orderRepository.save(order);
+        log.info("Order created successfully: {} for user: {}", savedOrder.getId(), user.getEmail());
+
+        return orderMapper.toDto(savedOrder);
     }
 
+    @Transactional
     public OrderDto updateStatus(UUID id, OrderUpdateDto dto) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", id));
+
+        // Validate status transition (optional business logic)
+        // e.g., can't change from DELIVERED to PENDING
 
         orderMapper.updateEntityFromDto(dto, order);
-        return orderMapper.toDto(orderRepository.save(order));
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order {} status updated to: {}", id, updatedOrder.getStatus());
+        return orderMapper.toDto(updatedOrder);
     }
 
     public OrderDto getOrderById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .map(orderMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", orderId));
     }
 
     public Page<OrderDto> getAllOrders(Pageable pageable) {
@@ -86,19 +125,28 @@ public class OrderService {
     }
 
     public Page<OrderDto> getOrdersByUserId(UUID userId, Pageable pageable) {
+        // Validate user exists
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User", "id", userId);
+        }
+
         return orderRepository.findByUser_Id(userId, pageable)
                 .map(orderMapper::toDto);
     }
 
+    @Transactional
     public void deleteOrderById(UUID orderId) {
-        if (!orderRepository.existsById(orderId)) {
-            throw new RuntimeException("Order not found"); // TODO: Custom Exception in issue #5
-        }
-        orderRepository.deleteById(orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", orderId));
+
+        // Optional: Add business logic validation
+        // e.g., can't delete DELIVERED orders
+
+        orderRepository.delete(order);
+        log.info("Order deleted: {}", orderId);
     }
 
-
-    public boolean isExists(UUID id) {
-        return  orderRepository.existsById(id);
+    public boolean existsById(UUID id) {
+        return orderRepository.existsById(id);
     }
 }

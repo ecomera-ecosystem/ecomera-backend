@@ -62,47 +62,35 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        try {
-            return http
-                    .csrf(csrf -> csrf.ignoringRequestMatchers(WHITE_LIST_URL))
-                    .authorizeHttpRequests(req -> req
-                            // Swagger + Auth endpoints open
-                            .requestMatchers(WHITE_LIST_URL).permitAll()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(csrf -> csrf.ignoringRequestMatchers(WHITE_LIST_URL))
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers(WHITE_LIST_URL).permitAll()
 
-                            // Role-based access for management endpoints
-                            .requestMatchers(MANAGEMENT_ENDPOINT).hasAnyRole(ADMIN.name(), MANAGER.name())
+                        .requestMatchers(ADMIN_ENDPOINT).hasRole(ADMIN.name())
+                        .requestMatchers(GET, ADMIN_ENDPOINT).hasAuthority(ADMIN_READ.name())
+                        .requestMatchers(POST, ADMIN_ENDPOINT).hasAuthority(ADMIN_CREATE.name())
+                        .requestMatchers(PUT, ADMIN_ENDPOINT).hasAuthority(ADMIN_UPDATE.name())
+                        .requestMatchers(DELETE, ADMIN_ENDPOINT).hasAuthority(ADMIN_DELETE.name())
 
-                            // Authority-based access for management endpoints (fine-grained)
-                            .requestMatchers(GET, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
-                            .requestMatchers(POST, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
-                            .requestMatchers(PUT, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
-                            .requestMatchers(DELETE, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
+                        .requestMatchers(MANAGEMENT_ENDPOINT).hasAnyRole(ADMIN.name(), MANAGER.name())
+                        .requestMatchers(GET, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
+                        .requestMatchers(POST, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
+                        .requestMatchers(PUT, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
+                        .requestMatchers(DELETE, MANAGEMENT_ENDPOINT).hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
 
-                            // Role-based access for admin endpoints
-                            .requestMatchers(ADMIN_ENDPOINT).hasRole(ADMIN.name())
-
-                            // Authority-based access for admin endpoints
-                            .requestMatchers(GET, ADMIN_ENDPOINT).hasAuthority(ADMIN_READ.name())
-                            .requestMatchers(POST, ADMIN_ENDPOINT).hasAuthority(ADMIN_CREATE.name())
-                            .requestMatchers(PUT, ADMIN_ENDPOINT).hasAuthority(ADMIN_UPDATE.name())
-                            .requestMatchers(DELETE, ADMIN_ENDPOINT).hasAuthority(ADMIN_DELETE.name())
-
-                            // All other requests require authentication
-                            .anyRequest().authenticated()
-                    )
-                    .sessionManagement(ss -> ss.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authenticationProvider(authenticationProvider)
-                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                    .logout(logout -> logout
-                            .logoutUrl("/api/auth/logout")
-                            .addLogoutHandler(logoutHandler)
-                            .logoutSuccessHandler((req, res, auth) -> SecurityContextHolder.clearContext())
-                    )
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Security configuration failed", e); // TODO: work on a proper exception handling here in issue #5
-        }
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(ss -> ss.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler((req, res, auth) -> SecurityContextHolder.clearContext())
+                )
+                .build();
     }
 
     @Bean

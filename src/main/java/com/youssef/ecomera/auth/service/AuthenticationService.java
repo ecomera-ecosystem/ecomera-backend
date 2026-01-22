@@ -1,18 +1,21 @@
 package com.youssef.ecomera.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.youssef.ecomera.auth.security.JwtService;
 import com.youssef.ecomera.auth.dto.AuthenticationRequest;
 import com.youssef.ecomera.auth.dto.AuthenticationResponse;
 import com.youssef.ecomera.auth.dto.RegisterRequest;
 import com.youssef.ecomera.auth.entity.Token;
-import com.youssef.ecomera.auth.repository.TokenRepository;
 import com.youssef.ecomera.auth.enums.TokenType;
+import com.youssef.ecomera.auth.repository.TokenRepository;
+import com.youssef.ecomera.auth.security.JwtService;
+import com.youssef.ecomera.common.exception.BusinessException;
+import com.youssef.ecomera.common.exception.ResourceNotFoundException;
 import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final UserRepository userRepository;
@@ -33,13 +37,20 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    private static final String FIELD_EMAIL = "email";
+
     /**
      * Register a new user, save it to DB and return a generated token.
-     * @param request custom request object containing user data (credentials + firstname + lastname)
-     * @return custom authentication response containing a jwt token
      */
+    @Transactional
     public AuthenticationResponse register(RegisterRequest request) {
-        var user = User.builder()
+        // Check if email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException("Email already registered: " + request.getEmail());
+        }
+
+        // Build user with SuperBuilder (because User extends BaseEntity)
+        User user = User.builder()
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
                 .email(request.getEmail())
@@ -47,12 +58,14 @@ public class AuthenticationService {
                 .role(request.getRole())
                 .build();
 
-        var savedUser = userRepository.save(user); // Save the user to the database
+        User savedUser = userRepository.save(user);
+        log.info("User registered successfully: {}", savedUser.getEmail());
 
-        // Generate a JWT token for the newly registered user
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        // Save the token to the database
+        // Generate tokens
+        String jwtToken = jwtService.generateToken(savedUser);
+        String refreshToken = jwtService.generateRefreshToken(savedUser);
+
+        // Save access token
         saveUserToken(savedUser, jwtToken);
 
         return AuthenticationResponse.builder()
@@ -63,31 +76,35 @@ public class AuthenticationService {
 
     /**
      * Authenticate a user and return a generated token.
-     * @param request custom request object containing user email and password
-     * @return custom authentication response containing a jwt token
      */
+    @Transactional
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-            )
+                        request.getEmail(),
+                        request.getPassword()
+                )
         );
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(); // Throw any exception not important
 
-        var jwtToken = jwtService.generateToken(user); // Generate a JWT token for the authenticated user
-        var refreshToken = jwtService.generateRefreshToken(user); // Generate a refresh token for the authenticated user
+        // Find user
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, request.getEmail()));
 
-        // Revoke (cancel) all previous tokens for the user
+        // Generate tokens
+        String jwtToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        // Revoke old tokens and save new one
         revokeAllUserTokens(user);
-        // Save the token to the database
         saveUserToken(user, jwtToken);
 
-        // Update the last login time
+        // Update last login
         user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
 
-        // Return the generated token in the response
+        log.info("User authenticated successfully: {}", user.getEmail());
+
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -96,11 +113,9 @@ public class AuthenticationService {
 
     /**
      * Save a user token to the database.
-     * @param user the user to whom the token belongs
-     * @param jwtToken the generated JWT token
      */
     private void saveUserToken(User user, String jwtToken) {
-        var token = Token.builder()
+        Token token = Token.builder()
                 .user(user)
                 .value(jwtToken)
                 .tokenType(TokenType.BEARER)
@@ -109,75 +124,76 @@ public class AuthenticationService {
                 .build();
         tokenRepository.save(token);
     }
+
     /**
      * Revoke all tokens for a user.
-     * @param user the user whose tokens will be revoked
      */
     private void revokeAllUserTokens(User user) {
-        // Find a list of all valid tokens for the user
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-        // If the list is empty, do nothing
-        if (validUserTokens.isEmpty())
+
+        if (validUserTokens.isEmpty()) {
             return;
-        // Otherwise, set all tokens to expired and revoked
+        }
+
         validUserTokens.forEach(token -> {
             token.setExpired(true);
             token.setRevoked(true);
         });
-        // Save changes to the database
+
         tokenRepository.saveAll(validUserTokens);
     }
 
     /**
      * Refresh the token for a user.
-     * @param request the HTTP request containing the authorization header with the refresh token
-     * @param response the HTTP response to send the new token
-     * @throws IOException if an I/O error occurs while writing the response
      */
+    @Transactional
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        final String refreshToken;
-        final String userEmail;
-        // Check if the authorization header is present and starts with "Bearer "
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return;
         }
-        // Extract the refresh token from the authorization header
-        refreshToken = authHeader.substring(7);
-        // Extract the user email from the refresh token
-        userEmail = jwtService.extractUsername(refreshToken);
-        // Check if the user email is not null and retrieve the user from the database
-        if (userEmail != null) {
-            var user = this.userRepository.findByEmail(userEmail)
-                    .orElseThrow();
-            // Check if the refresh token is valid for the user
-            if (jwtService.isTokenValid(refreshToken, user)) {
-                var accessToken = jwtService.generateToken(user); // Generate a new access token for the user
-                revokeAllUserTokens(user); // Revoke all previous tokens for the user
-                saveUserToken(user, accessToken); // Save the new access token to the database
 
-                // Create a new authentication response with the new access token and refresh token
-                var authResponse = AuthenticationResponse.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build();
-                // Set the content type to JSON
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
-            }
+        String refreshToken = authHeader.substring(7);
+        String userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail == null) {
+            return;
         }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, userEmail));
+
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new BusinessException("Invalid refresh token");
+        }
+
+        // Generate new access token
+        String accessToken = jwtService.generateToken(user);
+
+        // Revoke old tokens and save new one
+        revokeAllUserTokens(user);
+        saveUserToken(user, accessToken);
+
+        // Build response
+        AuthenticationResponse authResponse = AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
+        response.setContentType("application/json");
+        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
     }
 
     /**
      * Update the last login time of a user.
-     * @param email the email of the user to update
      */
     @Transactional
     public void updateLastLogin(String email, String ip) {
-        userRepository.findByEmail(email)
-                .ifPresent(user -> {
-                    user.setLastLogin(LocalDateTime.now());
-                    user.setIpAddress(ip);
-                    // No need to manually save - @Transactional will flush
-                });
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, email));
+
+        user.setLastLogin(LocalDateTime.now());
+        user.setIpAddress(ip);
     }
 }
