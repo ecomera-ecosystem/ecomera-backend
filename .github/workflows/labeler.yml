@@ -2,8 +2,10 @@ name: GitHub Labeler
 
 on:
   pull_request_target:
+    branches: [ master, development ]
+    types: [ opened, edited, reopened, labeled, unlabeled, synchronize ]
   issues:
-    types: [ opened, edited, reopened ]
+    types: [ opened, edited, reopened, labeled, unlabeled, milestoned, demilestoned ]
   schedule:
     - cron: "0 0 * * 1"
 jobs:
