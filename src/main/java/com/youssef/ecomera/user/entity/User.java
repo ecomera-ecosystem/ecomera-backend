@@ -24,7 +24,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "_user")
+@Table(name = "app_user")
 public class User extends BaseEntity implements UserDetails {
 
     @NotBlank(message = "First name is required")

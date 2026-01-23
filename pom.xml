@@ -365,6 +365,20 @@
             </plugin>
 
             <!-- ============================================ -->
+            <!-- Liquibase Database Migration Management Plugin -->
+            <!-- ============================================ -->
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>${liquibase.version}</version>
+                <configuration>
+                    <propertyFile>src/main/resources/liquibase.properties</propertyFile>
+                    <changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
+                    <outputDirectory>${project.build.directory}/liquibase-docs</outputDirectory>
+                </configuration>
+            </plugin>
+
+            <!-- ============================================ -->
             <!-- JaCoCo Code Coverage -->
             <!-- ============================================ -->
             <plugin>
@@ -385,8 +399,8 @@
                         </goals>
                     </execution>
                     <!-- Coverage check disabled during infrastructure setup -->
-                    <!-- Will enable in Sprint 1 with realistic thresholds -->
-                    <!-- TODO: Enable in Sprint 1 with 30% threshold after writing initial tests -->
+                    <!-- Will enable in Sprint 2 with realistic thresholds -->
+                    <!-- TODO: Enable in Sprint 2 with 30% threshold after writing initial tests -->
                     <!--                    <execution>-->
                     <!--                        <id>check</id>-->
                     <!--                        <goals>-->
