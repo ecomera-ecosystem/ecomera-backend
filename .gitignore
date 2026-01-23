@@ -6,6 +6,7 @@ target/
 !**/src/main/resources/liquibase.properties
 
 .env
+.env.docker
 
 ### STS ###
 .apt_generated
