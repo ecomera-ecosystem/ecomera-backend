@@ -156,6 +156,7 @@ mvn liquibase:history
         ./mvnw liquibase:validate	                                  # Verify changelog integrity
         ./mvnw liquibase:tag --define liquibase.tag=tag_name          # Create a tag (bookmark) at the current database state
         ./mvnw liquibase:rollback --define liquibase.tag=tag_name     # Rollback to last bookmark of the database
+        ./mvnw liquibase:dbDoc                                        # Generate documentation in target/liquibase-docs
 
 ## 🔒 Rollback Best Practices
 
