@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="006-create-payments-table.xml" author="youssef" context="dev, prod" labels="v0.1.0, sprint-0">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="payment"/>
+            </not>
+        </preConditions>
+        <createTable tableName="payment">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_payment"/>
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="payment" constraintName="FK_PAYMENT_ON_ORDER"
+                                 referencedColumnNames="id" referencedTableName="order"/>
+
+        <addUniqueConstraint columnNames="order_id" constraintName="uc_payment_order" tableName="payment"/>
+
+        <rollback>
+            <dropTable tableName="payment"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
