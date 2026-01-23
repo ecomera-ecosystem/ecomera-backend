@@ -12,6 +12,7 @@
     <include file="db/changelog/changes/v0.1.0/004-create-orders-table.xml"/>
     <include file="db/changelog/changes/v0.1.0/005-create-order-items-table.xml"/>
     <include file="db/changelog/changes/v0.1.0/006-create-payments-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/007-envers-audit-tables.xml"/>
 
     <changeSet id="tag-v0.1.0" author="youssef" context="dev, prod" labels="v0.1.0, sprint-0">
         <tagDatabase tag="v0.1.0"/>
