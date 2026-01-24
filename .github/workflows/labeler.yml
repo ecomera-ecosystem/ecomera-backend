@@ -16,6 +16,9 @@ jobs:
       pull-requests: write
       issues: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Sync labels & Create Missing Labels
         uses: crazy-max/ghaction-github-labeler@v5
         with:
