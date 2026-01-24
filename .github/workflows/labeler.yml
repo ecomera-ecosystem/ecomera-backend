@@ -16,6 +16,13 @@ jobs:
       pull-requests: write
       issues: write
     steps:
+      - name: Sync labels & Create Missing Labels
+        uses: crazy-max/ghaction-github-labeler@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          yaml-file: .github/labeler.yml
+          skip-delete: true
+
       - name: Apply labels to PRs and Issues
         uses: actions/labeler@v6
         with:
