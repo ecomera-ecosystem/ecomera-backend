@@ -13,7 +13,7 @@
 
 - name: codeql
   color: "5319E7"
-  description: "CodeQL security scanning, issues and workflows related to CodeQL security scanning and automated code analysis."
+  description: "CodeQL security scanning, issues, workflows, and automated code analysis"
 
 # --- API & Domain ---
 - name: api
