@@ -1,9 +1,11 @@
 name: GitHub Labeler
 
 on:
-  pull_request_target:
+  pull_request:
+    branches: [ master, development ]
+    types: [ opened, edited, reopened, labeled, unlabeled, synchronize ]
   issues:
-    types: [opened, edited, reopened]
+    types: [ opened, edited, reopened, labeled, unlabeled, milestoned, demilestoned ]
   schedule:
     - cron: "0 0 * * 1"
 jobs:
@@ -31,7 +33,13 @@ jobs:
         uses: actions/labeler@v6
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
           pr-number: |
             10 # first PR
-
-          sync-labels: true
+            11
+            14
+            19
+            20
+            21
+            22
+            23
