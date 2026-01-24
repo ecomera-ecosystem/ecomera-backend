@@ -3,12 +3,14 @@
 auth:
   - changed-files:
       - any-glob-to-any-file: [ "src/main/java/**/auth/**", "src/main/java/**/security/**" ]
+  - title: [ "auth", "authentication", "login", "signup", "register" ]
+  - body: [ "authentication", "login flow", "credentials", "user auth" ]
 
 security:
   - changed-files:
       - any-glob-to-any-file: [ "src/main/java/**/auth/**", "src/main/java/**/security/**" ]
-  - title: [ "security", "jwt", "vulnerability" ]
-  - body: [ "xss", "csrf", "sql injection" ]
+  - title: [ "security", "vulnerability", "hardening" ]
+  - body: [ "xss", "csrf", "sql injection", "privilege", "attack vector", "security fix" ]
 
 codeql:
   - changed-files:
@@ -20,15 +22,16 @@ codeql:
 api:
   - changed-files:
       - any-glob-to-any-file: [ "src/main/java/**/controller/**", "src/main/java/**/domain/**" ]
-  - title: [ "api", "endpoint", "swagger", "openapi" ]
+  - title: [ "api", "endpoint", "rest", "controller", "openapi", "swagger" ]
+  - body: [ "http", "request", "response", "endpoint", "swagger ui", "rest", "controller" ]
 
 refactor:
-  - title: [ "refactor", "cleanup", "restructure" ]
-  - body: [ "refactor", "cleanup", "restructure" ]
+  - title: [ "refactor", "cleanup", "restructure", "simplify" ]
+  - body: [ "technical debt", "refactor", "cleanup", "remove duplication" ]
 
 enhancement:
-  - title: [ "feature", "enhancement", "improve" ]
-  - body: [ "add", "support", "extend" ]
+  - title: [ "feature", "enhancement", "improve", "extend" ]
+  - body: [ "new feature", "enhancement", "improvement", "extend functionality" ]
 
 # --- Database ---
 database:
@@ -113,12 +116,13 @@ mockito:
 documentation:
   - changed-files:
       - any-glob-to-any-file: [ "docs/**", "README.md" ]
-  - title: [ "docs", "documentation", "readme" ]
+  - title: [ "docs", "documentation", "readme", "guide" ]
+  - body: [ "how to", "setup", "installation", "usage", "documentation" ]
 
 # --- Generic Workflow Labels ---
 bug:
-  - title: [ "bug", "error", "fail" ]
-  - body: [ "unexpected", "crash", "stacktrace" ]
+  - title: [ "bug", "error", "fail", "fix", "broken", "error" ]
+  - body: [ "unexpected", "crash", "stacktrace", "exception", "stacktrace", "unexpected behavior", "does not work", "fails" ]
 
 question:
   - title: [ "question", "how", "what", "why" ]
@@ -165,7 +169,7 @@ low-priority:
 
 # --- Sprint Labels ---
 sprint-0:
-  - title: [ "sprint-0", "Setup", "Restructure" ]
+  - title: [ "sprint-0" ]
   - body: [ "initial setup", "project setup", "setup", "foundation", "initial", "restructure" ]
 sprint-1:
   - title: [ "sprint-1" ]
