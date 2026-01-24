@@ -45,17 +45,17 @@ public class AuthenticationService {
     @Transactional
     public AuthenticationResponse register(RegisterRequest request) {
         // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Email already registered: " + request.getEmail());
+        if (userRepository.existsByEmail(request.email())) {
+            throw new BusinessException("Email already registered: " + request.email());
         }
 
         // Build user with SuperBuilder (because User extends BaseEntity)
         User user = User.builder()
-                .firstName(request.getFirstname())
-                .lastName(request.getLastname())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .firstName(request.firstname())
+                .lastName(request.lastname())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .role(request.role())
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -82,14 +82,14 @@ public class AuthenticationService {
         // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
+                        request.email(),
+                        request.password()
                 )
         );
 
         // Find user
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, request.getEmail()));
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, request.email()));
 
         // Generate tokens
         String jwtToken = jwtService.generateToken(user);

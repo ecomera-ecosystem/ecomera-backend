@@ -1,19 +1,13 @@
 package com.youssef.ecomera.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-/**
- * @author Youssef
- * @version 1.0
- * @created 16/04/2025
- */
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class AuthenticationRequest {
-
-    private String email;
-    private String password;
+public record AuthenticationRequest(
+        @Schema(description = "User email address")
+        String email,
+        @Schema(description = "User password")
+        String password
+) {
 }

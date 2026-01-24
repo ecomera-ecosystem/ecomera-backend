@@ -1,25 +1,16 @@
 package com.youssef.ecomera.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * a class to represent the authentication response
- * it holds the access token and refresh token
- */
-
-@Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthenticationResponse {
-
-    @JsonProperty("access_token")
-    private String accessToken;
-    @JsonProperty("refresh_token")
-    private String refreshToken;
-
+public record AuthenticationResponse(
+        @JsonProperty("access_token")
+        @Schema(description = "JWT access token")
+        String accessToken,
+        @JsonProperty("refresh_token")
+        @Schema(description = "JWT refresh token")
+        String refreshToken
+) {
 }
