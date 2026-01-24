@@ -20,7 +20,7 @@ jobs:
         uses: crazy-max/ghaction-github-labeler@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          yaml-file: .github/labeler.yml
+          yaml-file: '.github/labels.yml'
           skip-delete: true
 
       - name: Apply labels to PRs and Issues
