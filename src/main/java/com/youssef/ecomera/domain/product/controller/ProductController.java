@@ -37,7 +37,7 @@ public class ProductController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductCreateDto productDTO) {
+    public ResponseEntity<ProductDto> create(@Valid @RequestBody ProductCreateDto productDTO) {
         ProductDto product = productService.saveProduct(productDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
@@ -49,7 +49,7 @@ public class ProductController {
             @ApiResponse(responseCode = "403", description = "Unauthorized access")
     })
     @GetMapping
-    public ResponseEntity<Page<ProductDto>> getAllProducts(
+    public ResponseEntity<Page<ProductDto>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size", example = "10") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Field to sort by", example = "createdAt") @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -64,7 +64,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@Parameter(description = "Product UUID") @PathVariable UUID id) {
+    public ResponseEntity<ProductDto> getById(@Parameter(description = "Product UUID") @PathVariable UUID id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
@@ -74,7 +74,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid category provided")
     })
     @GetMapping("/count")
-    public ResponseEntity<Long> getProductCount(
+    public ResponseEntity<Long> getCount(
             @Parameter(description = "Category name to filter by", example = "ELECTRONICS")
             @RequestParam(required = false)
             String category
@@ -94,7 +94,7 @@ public class ProductController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(
+    public ResponseEntity<ProductDto> update(
             @Parameter(description = "Product UUID") @PathVariable UUID id,
             @Valid @RequestBody ProductUpdateDto dto
     ) {
@@ -108,7 +108,7 @@ public class ProductController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@Parameter(description = "Product UUID") @PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@Parameter(description = "Product UUID") @PathVariable UUID id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
     }
@@ -119,7 +119,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid search query")
     })
     @GetMapping("/search")
-    public ResponseEntity<Page<ProductDto>> searchProducts(
+    public ResponseEntity<Page<ProductDto>> search(
             @Parameter(description = "Search query string", example = "Laptop") @RequestParam String query,
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size", example = "10") @RequestParam(defaultValue = "10") int size) {
@@ -133,7 +133,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid category provided")
     })
     @GetMapping("/category/{category}")
-    public ResponseEntity<Page<ProductDto>> getProductsByCategory(
+    public ResponseEntity<Page<ProductDto>> getByCategory(
             @Parameter(description = "Category name", example = "ELECTRONICS") @PathVariable String category,
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size", example = "10") @RequestParam(defaultValue = "10") int size) {
@@ -147,7 +147,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/title")
-    public ResponseEntity<ProductDto> getProductByTitle(
+    public ResponseEntity<ProductDto> getByTitle(
             @Parameter(description = "Product title", example = "MacBook Pro M3") @RequestParam String title) {
         return ResponseEntity.ok(productService.getProductByTitle(title));
     }
@@ -158,7 +158,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid price range")
     })
     @GetMapping("/price")
-    public ResponseEntity<Iterable<ProductDto>> getProductsByPriceInRange(
+    public ResponseEntity<Iterable<ProductDto>> getByPriceInRange(
             @Parameter(description = "Minimum price", example = "100.00") @RequestParam BigDecimal minPrice,
             @Parameter(description = "Maximum price", example = "2000.00") @RequestParam BigDecimal maxPrice,
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
