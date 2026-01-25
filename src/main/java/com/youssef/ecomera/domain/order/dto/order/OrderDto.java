@@ -1,7 +1,7 @@
 package com.youssef.ecomera.domain.order.dto.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.youssef.ecomera.domain.order.dto.orderItem.OrderItemDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

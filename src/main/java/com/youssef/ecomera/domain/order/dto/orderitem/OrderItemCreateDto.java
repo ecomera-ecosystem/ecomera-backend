@@ -1,4 +1,4 @@
-package com.youssef.ecomera.domain.order.dto.orderItem;
+package com.youssef.ecomera.domain.order.dto.orderitem;
 
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 
