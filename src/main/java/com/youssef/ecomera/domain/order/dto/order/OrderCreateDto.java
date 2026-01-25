@@ -1,6 +1,6 @@
 package com.youssef.ecomera.domain.order.dto.order;
 
-import com.youssef.ecomera.domain.order.dto.orderItem.OrderItemCreateDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 

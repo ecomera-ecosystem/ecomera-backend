@@ -1,4 +1,4 @@
-package com.youssef.ecomera.domain.order.dto.orderItem;
+package com.youssef.ecomera.domain.order.dto.orderitem;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
