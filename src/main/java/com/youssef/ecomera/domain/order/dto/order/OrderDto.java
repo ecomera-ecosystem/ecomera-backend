@@ -2,6 +2,7 @@ package com.youssef.ecomera.domain.order.dto.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemDto;
+import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -20,8 +21,8 @@ public record OrderDto(
         @Schema(description = "UUID of the user who placed the order", example = "123e4567-e89b-12d3-a456-426614174000")
         UUID userId,
 
-        @Schema(description = "Order status", example = "PENDING")
-        String status,
+        @Schema(description = "Order status", example = "PENDING", implementation = OrderStatus.class)
+        OrderStatus status,
 
         @Schema(description = "Total price of the order", example = "149.99")
         BigDecimal totalPrice,
