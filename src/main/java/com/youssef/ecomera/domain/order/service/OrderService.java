@@ -57,14 +57,14 @@ public class OrderService {
 
         // Build OrderItems and validate stock
         List<OrderItem> items = dto.items().stream().map(itemDto -> {
-            Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.getProductId()));
+            Product product = productRepository.findById(itemDto.productId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.productId()));
 
             // Validate stock availability
-            if (product.getStock() < itemDto.getQuantity()) {
+            if (product.getStock() < itemDto.quantity()) {
                 throw new BusinessException(
                         String.format("Insufficient stock for product '%s'. Available: %d, Requested: %d",
-                                product.getTitle(), product.getStock(), itemDto.getQuantity())
+                                product.getTitle(), product.getStock(), itemDto.quantity())
                 );
             }
 
