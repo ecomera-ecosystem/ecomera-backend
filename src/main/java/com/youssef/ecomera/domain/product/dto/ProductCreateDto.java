@@ -1,38 +1,39 @@
 package com.youssef.ecomera.domain.product.dto;
 
 import com.youssef.ecomera.domain.product.entity.Product;
+import com.youssef.ecomera.domain.product.enums.CategoryType;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
  * Create DTO for {@link Product}
  */
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
-public class ProductCreateDto {
+@Schema(description = "DTO for creating a new product")
+public record ProductCreateDto(
+        @NotBlank
+        @Schema(description = "Product title", example = "MacBook Pro M3")
+        String title,
 
-    @NotBlank
-    private String title;
+        @Schema(description = "Detailed description of the product", example = "Latest Apple MacBook Pro with M3 chip")
+        String description,
 
-    private String description;
+        @NotBlank
+        @Schema(description = "Image URL of the product", example = "https://example.com/images/macbook.jpg")
+        String imageUrl,
 
-    @NotBlank
-    private String imageUrl;
+        @NotNull
+        @Positive
+        @Schema(description = "Price of the product", example = "1999.99")
+        BigDecimal price,
 
-    @NotNull
-    @DecimalMin(value = "0.0", inclusive = false)
-    private BigDecimal price;
+        @Min(0) @Schema(description = "Available stock quantity", example = "50")
+        Integer stock,
 
-    @Min(0)
-    private Integer stock;
-
-    @NotBlank
-    private String category; // Acceptable as "ELECTRONICS", "BOOKS", etc.
+        @NotBlank
+        @Schema(description = "Category of the product", example = "ELECTRONICS", allowableValues = {"ELECTRONICS", "MEN's CLOTHING", "WOMEN's CLOTHING", "JEWLERY"})
+        CategoryType category
+) {
 }
