@@ -1,6 +1,6 @@
 package com.youssef.ecomera.config;
 
-import jakarta.servlet.Filter;
+import com.youssef.ecomera.auth.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
@@ -58,10 +58,10 @@ public class SecurityConfig {
     private static final String MANAGEMENT_ENDPOINT = "/api/management/**";
 
 
-    private final Filter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
-    private final  JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

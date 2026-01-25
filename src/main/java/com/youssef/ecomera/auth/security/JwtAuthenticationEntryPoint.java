@@ -29,10 +29,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
+        String msg = authException.getMessage();
+
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                "JWT token has expired",
+                msg,
                 request.getRequestURI()
         );
 
