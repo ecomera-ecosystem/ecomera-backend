@@ -1,15 +1,13 @@
 package com.youssef.ecomera.domain.order.dto.order;
 
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-@Data
-public class OrderUpdateDto {
-    private String status;
-}
+@Schema(name = "OrderUpdateDto", description = "Payload for updating an existing order")
+public record OrderUpdateDto(
+
+        @Schema(description = "New status for the order", example = "SHIPPED")
+        String status
+) {}
