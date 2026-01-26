@@ -4,6 +4,7 @@ import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
 import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemDto;
 import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemUpdateDto;
 import com.youssef.ecomera.domain.order.service.OrderItemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
@@ -47,7 +48,7 @@ public class OrderItemController {
     })
     @PostMapping
     public ResponseEntity<OrderItemDto> create(
-            @Parameter(description = "Order item creation payload") @RequestBody OrderItemCreateDto orderItemDto)
+            @Parameter(description = "Order item creation payload") @Valid @RequestBody OrderItemCreateDto orderItemDto)
             throws ChangeSetPersister.NotFoundException {
         OrderItemDto savedOrderItem = orderItemService.create(orderItemDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrderItem);
@@ -61,7 +62,7 @@ public class OrderItemController {
     @PutMapping("/{id}")
     public ResponseEntity<OrderItemDto> update(
             @Parameter(description = "Order item UUID") @PathVariable UUID id,
-            @Parameter(description = "Order item update payload") @RequestBody OrderItemUpdateDto orderItemDto)
+            @Parameter(description = "Order item update payload") @Valid @RequestBody OrderItemUpdateDto orderItemDto)
             throws ChangeSetPersister.NotFoundException {
         if (orderItemService.isExists(id)) {
             return ResponseEntity.notFound().build();
