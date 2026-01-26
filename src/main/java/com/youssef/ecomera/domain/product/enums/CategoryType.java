@@ -1,5 +1,6 @@
 package com.youssef.ecomera.domain.product.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public enum CategoryType {
     @Schema(description = "Women's Clothing")
     WOMENS_CLOTHING("Women's Clothing");
 
-
+    @JsonValue
     private final String name;
 
     public static Optional<CategoryType> fromString(String value) {

@@ -1,5 +1,6 @@
 package com.youssef.ecomera.domain.order.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -26,5 +27,6 @@ public enum OrderStatus {
     @Schema(description = "Order has been paid successfully")
     PAID("Paid");
 
+    @JsonValue
     private final String statusName;
 }
