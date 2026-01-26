@@ -20,6 +20,8 @@ public interface OrderMapper {
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "totalPrice", ignore = true)
     @Mapping(target = "status", constant = "PENDING") // default status
     Order toEntity(OrderCreateDto dto);

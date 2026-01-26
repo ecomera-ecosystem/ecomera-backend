@@ -23,12 +23,16 @@ public interface ProductMapper {
     @Mapping(target = "id", ignore = true)          // Ignored for creation
     @Mapping(target = "createdAt", ignore = true)   // Auto-populated
     @Mapping(target = "updatedAt", ignore = true)   // Auto-populated
+    @Mapping(target = "createdBy", ignore = true)   // Auto-populated
+    @Mapping(target = "updatedBy", ignore = true)   // Auto-populated
     Product toEntity(ProductCreateDto dto);
 
     // ProductUpdateDto → Existing Product (patch partial update)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProductFromDto(ProductUpdateDto dto, @MappingTarget Product product);
 
