@@ -1,4 +1,4 @@
-package com.youssef.ecomera.user.entity.enums;
+package com.youssef.ecomera.user.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

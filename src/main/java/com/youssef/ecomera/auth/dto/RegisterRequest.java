@@ -2,7 +2,7 @@ package com.youssef.ecomera.auth.dto;
 
 import lombok.Builder;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.youssef.ecomera.user.entity.enums.Role;
+import com.youssef.ecomera.user.enums.Role;
 
 
 @Builder
