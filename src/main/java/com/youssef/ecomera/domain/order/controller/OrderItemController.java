@@ -60,7 +60,7 @@ public class OrderItemController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<OrderItemDto> update(
-            @Parameter(description = "Order item UUID") @PathVariable("id") UUID id,
+            @Parameter(description = "Order item UUID") @PathVariable UUID id,
             @Parameter(description = "Order item update payload") @RequestBody OrderItemUpdateDto orderItemDto)
             throws ChangeSetPersister.NotFoundException {
         if (orderItemService.isExists(id)) {
@@ -77,7 +77,7 @@ public class OrderItemController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<OrderItemDto> getById(
-            @Parameter(description = "Order item UUID") @PathVariable("id") UUID id) {
+            @Parameter(description = "Order item UUID") @PathVariable UUID id) {
         if (orderItemService.isExists(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -92,7 +92,7 @@ public class OrderItemController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "Order item UUID") @PathVariable("id") UUID id) {
+            @Parameter(description = "Order item UUID") @PathVariable UUID id) {
         if (orderItemService.isExists(id)) {
             return ResponseEntity.notFound().build();
         }
