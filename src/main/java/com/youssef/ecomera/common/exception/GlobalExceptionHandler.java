@@ -23,6 +23,26 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     // ========================================
+    // Unauthorized Exceptions
+    // ========================================
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(
+            UnauthorizedException ex,
+            HttpServletRequest request) {
+
+        log.warn("Unauthorized access on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized Action",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    // ========================================
     // Custom API Exceptions
     // ========================================
 
@@ -172,8 +192,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                "Invalid email or password",
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Invalid email or password: " + ex.getMessage(),
                 request.getRequestURI()
         );
 
@@ -212,7 +232,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred. Please try again later.",
+                "An unexpected error occurred: " + ex.getMessage(),
                 request.getRequestURI()
         );
 

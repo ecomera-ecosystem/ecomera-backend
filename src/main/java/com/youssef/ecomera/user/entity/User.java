@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.youssef.ecomera.common.audit.BaseEntity;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.auth.entity.Token;
-import com.youssef.ecomera.user.entity.enums.Role;
+import com.youssef.ecomera.user.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

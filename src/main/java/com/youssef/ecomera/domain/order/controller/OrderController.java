@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +36,7 @@ public class OrderController {
     })
     @PostMapping
     public ResponseEntity<OrderDto> create(
-            @Parameter(description = "Order creation payload") @RequestBody OrderCreateDto orderDto) {
+            @Parameter(description = "Order creation payload") @Valid @RequestBody OrderCreateDto orderDto) {
         OrderDto savedOrder = orderService.create(orderDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
@@ -50,7 +51,7 @@ public class OrderController {
     @PutMapping("/{id}")
     public ResponseEntity<OrderDto> update(
             @Parameter(description = "Order UUID") @PathVariable UUID id,
-            @Parameter(description = "Order update payload") @RequestBody OrderUpdateDto dto) {
+            @Parameter(description = "Order update payload") @Valid @RequestBody OrderUpdateDto dto) {
         return ResponseEntity.ok(orderService.updateStatus(id, dto));
     }
 

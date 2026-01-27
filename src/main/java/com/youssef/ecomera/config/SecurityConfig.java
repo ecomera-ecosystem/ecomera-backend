@@ -20,8 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.List;
 
-import static com.youssef.ecomera.user.entity.enums.Permission.*;
-import static com.youssef.ecomera.user.entity.enums.Role.*;
+import static com.youssef.ecomera.user.enums.Permission.*;
+import static com.youssef.ecomera.user.enums.Role.*;
 import static org.springframework.http.HttpMethod.*;
 
 /**

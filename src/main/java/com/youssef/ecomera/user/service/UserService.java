@@ -11,16 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * @author Youssef
- * @version 1.0
- * @created 13/04/2025
- * @lastModified 20/05/2025
- */
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -38,40 +31,24 @@ public class UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         // Check if the new password is not the same as the old password
-        if (!passwordEncoder.matches(req.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(req.oldPassword(), user.getPassword())) {
             throw new BadCredentialsException("Wrong Password");
         }
         // Check the new password is not the same as the old password
-        if (!req.getNewPassword().equals(req.getConfirmPassword())) {
+        if (!req.newPassword().equals(req.confirmPassword())) {
             throw new IllegalStateException("Confirmation Password and New Password do not match");
         }
 
         // Update the password
-        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(req.newPassword()));
 
         // Save changes
         userRepository.save(user);
 
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
-    }
-
-    public User getUserById(UUID id) {
-        return userRepository.findById(id).orElse(null);
-    }
-
-    public void deleteUser(UUID id) {
-        userRepository.deleteById(id);
     }
 
     public User getConnectedUser(Principal connectedUser) {
