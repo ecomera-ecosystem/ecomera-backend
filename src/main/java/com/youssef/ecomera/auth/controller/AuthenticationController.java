@@ -244,6 +244,33 @@ public class AuthenticationController {
         authService.refreshToken(request, response);
     }
 
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates a new access token using a valid refresh token. Send refresh token in Authorization header as 'Bearer {token}'",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Token refreshed successfully - Returns new access token",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthenticationResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired refresh token"
+            )
+    })
+    @PostMapping("/refresh-token")
+    public void refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        authService.refreshToken(request, response);
+    }
+
     private String getClientIpFromRequest(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
