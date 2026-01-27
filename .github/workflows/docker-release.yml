@@ -1,6 +1,13 @@
 name: Docker Release
 
 on:
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - "java/**"
+      - "pom.xml"
+      - "Dockerfile"
+      - ".github/workflows/docker-release.yml"
   push:
     branches: [ "master" ]
     paths:
