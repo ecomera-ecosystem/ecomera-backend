@@ -4,8 +4,6 @@ import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
 import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.dto.ProductUpdateDto;
 import com.youssef.ecomera.domain.product.entity.Product;
-import com.youssef.ecomera.domain.product.enums.CategoryType;
-//import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -19,32 +17,26 @@ import java.util.List;
 public interface ProductMapper {
 
     // Entity → DTO
-//    @InheritInverseConfiguration // this one makes id createdAt updatedAT null in get
-    @Mapping(target = "category", source = "category.name") // Convert enum to string
     ProductDto toDto(Product product);
 
-    // DTO → Entity
+    // DTO → Entity (create)
     @Mapping(target = "id", ignore = true)          // Ignored for creation
     @Mapping(target = "createdAt", ignore = true)   // Auto-populated
     @Mapping(target = "updatedAt", ignore = true)   // Auto-populated
-    @Mapping(target = "category", expression = "java(mapCategory(dto.getCategory()))")
+    @Mapping(target = "createdBy", ignore = true)   // Auto-populated
+    @Mapping(target = "updatedBy", ignore = true)   // Auto-populated
     Product toEntity(ProductCreateDto dto);
 
-    // ProductUpdateDto → Existing Product (for patch partial update)
+    // ProductUpdateDto → Existing Product (patch partial update)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "category", expression = "java(mapCategory(dto.getCategory()))")
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProductFromDto(ProductUpdateDto dto, @MappingTarget Product product);
 
-    // Custom enum conversion
-    default CategoryType mapCategory(String category) {
-        return category != null ?
-                CategoryType.valueOf(category.toUpperCase()) :
-                null;
-    }
-
+    // Collections
     List<ProductDto> toDtoList(List<Product> productList);
     Iterable<ProductDto> toDtoIterable(Iterable<Product> byPriceBetween);
 }

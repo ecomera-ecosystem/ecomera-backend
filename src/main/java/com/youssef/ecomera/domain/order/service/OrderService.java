@@ -43,28 +43,28 @@ public class OrderService {
     @Transactional
     public OrderDto create(OrderCreateDto dto) {
         // Validate request
-        if (dto.getItems() == null || dto.getItems().isEmpty()) {
+        if (dto.items() == null || dto.items().isEmpty()) {
             throw new BusinessException("Cannot create order with empty cart");
         }
 
         // Find user
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", dto.getUserId()));
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", dto.userId()));
 
         // Map DTO to entity
         Order order = orderMapper.toEntity(dto);
         order.setUser(user);
 
         // Build OrderItems and validate stock
-        List<OrderItem> items = dto.getItems().stream().map(itemDto -> {
-            Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.getProductId()));
+        List<OrderItem> items = dto.items().stream().map(itemDto -> {
+            Product product = productRepository.findById(itemDto.productId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.productId()));
 
             // Validate stock availability
-            if (product.getStock() < itemDto.getQuantity()) {
+            if (product.getStock() < itemDto.quantity()) {
                 throw new BusinessException(
                         String.format("Insufficient stock for product '%s'. Available: %d, Requested: %d",
-                                product.getTitle(), product.getStock(), itemDto.getQuantity())
+                                product.getTitle(), product.getStock(), itemDto.quantity())
                 );
             }
 
@@ -108,23 +108,23 @@ public class OrderService {
         return orderMapper.toDto(updatedOrder);
     }
 
-    public OrderDto getOrderById(UUID orderId) {
+    public OrderDto getById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .map(orderMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", orderId));
     }
 
-    public Page<OrderDto> getAllOrders(Pageable pageable) {
+    public Page<OrderDto> getAll(Pageable pageable) {
         return orderRepository.findAll(pageable)
                 .map(orderMapper::toDto);
     }
 
-    public Page<OrderDto> getOrdersByStatus(String status, Pageable pageable) {
+    public Page<OrderDto> getByStatus(String status, Pageable pageable) {
         return orderRepository.findByStatus(orderMapper.mapStatus(status), pageable)
                 .map(orderMapper::toDto);
     }
 
-    public Page<OrderDto> getOrdersByUserId(UUID userId, Pageable pageable) {
+    public Page<OrderDto> getByUserId(UUID userId, Pageable pageable) {
         // Validate user exists
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User", "id", userId);
@@ -135,7 +135,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrderById(UUID orderId) {
+    public void deleteById(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", orderId));
 

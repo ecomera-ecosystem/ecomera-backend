@@ -1,9 +1,9 @@
 package com.youssef.ecomera.domain.order.service;
 
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
-import com.youssef.ecomera.domain.order.dto.orderItem.OrderItemCreateDto;
-import com.youssef.ecomera.domain.order.dto.orderItem.OrderItemDto;
-import com.youssef.ecomera.domain.order.dto.orderItem.OrderItemUpdateDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemUpdateDto;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.product.entity.Product;
@@ -33,12 +33,12 @@ public class OrderItemService {
     private final OrderItemMapper orderItemMapper;
 
     @Transactional
-    public OrderItemDto createOrderItem(OrderItemCreateDto dto) {
-        Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", dto.getProductId()));
+    public OrderItemDto create(OrderItemCreateDto dto) {
+        Product product = productRepository.findById(dto.productId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", dto.productId()));
 
-        Order order = orderRepository.findById(dto.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", dto.getOrderId()));
+        Order order = orderRepository.findById(dto.orderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", dto.orderId()));
 
         // Map simple fields
         OrderItem orderItem = orderItemMapper.toEntity(dto);
@@ -53,12 +53,12 @@ public class OrderItemService {
     }
 
     @Transactional
-    public OrderItemDto updateOrderItem(UUID id, OrderItemUpdateDto dto) {
+    public OrderItemDto update(UUID id, OrderItemUpdateDto dto) {
         OrderItem existing = orderItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(OrderItem.class.getSimpleName(), "id", id));
 
-        Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", dto.getProductId()));
+        Product product = productRepository.findById(dto.productId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", dto.productId()));
 
         orderItemMapper.updateEntityFromDto(dto, existing);
         existing.setProduct(product);
@@ -70,18 +70,18 @@ public class OrderItemService {
         return orderItemMapper.toDto(updated);
     }
 
-    public OrderItemDto getOrderItemById(UUID id) {
+    public OrderItemDto getById(UUID id) {
         return orderItemRepository.findById(id)
                 .map(orderItemMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException(OrderItem.class.getSimpleName(), "id", id));
     }
 
-    public Page<OrderItemDto> getAllOrderItems(Pageable pageable) {
+    public Page<OrderItemDto> getAll(Pageable pageable) {
         return orderItemRepository.findAll(pageable)
                 .map(orderItemMapper::toDto);
     }
 
-    public Page<OrderItemDto> getOrderItemsByOrderId(UUID orderId, Pageable pageable) {
+    public Page<OrderItemDto> getByOrderId(UUID orderId, Pageable pageable) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
@@ -90,7 +90,7 @@ public class OrderItemService {
     }
 
     @Transactional
-    public void deleteOrderItemById(UUID id) {
+    public void deleteById(UUID id) {
         OrderItem orderItem = orderItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(OrderItem.class.getSimpleName(), "id", id));
 
