@@ -12,9 +12,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import com.youssef.ecomera.auth.dto.AuthenticationRequest;
@@ -22,10 +21,8 @@ import com.youssef.ecomera.auth.dto.AuthenticationResponse;
 import com.youssef.ecomera.auth.dto.CurrentUserDto;
 import com.youssef.ecomera.auth.service.AuthenticationService;
 import com.youssef.ecomera.auth.dto.RegisterRequest;
-import com.youssef.ecomera.user.repository.UserRepository;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationController {
 
     private final AuthenticationService authService;
-    private final UserRepository userRepository;
 
     @Operation(
             summary = "Register new user",
@@ -116,7 +112,7 @@ public class AuthenticationController {
                             )
                     )
             )
-            @RequestBody RegisterRequest request
+            @Valid @RequestBody RegisterRequest request
     ) {
         return ResponseEntity.ok(authService.register(request));
     }
@@ -172,7 +168,7 @@ public class AuthenticationController {
                             )
                     )
             )
-            @RequestBody AuthenticationRequest request,
+            @Valid @RequestBody AuthenticationRequest request,
             HttpServletRequest httpServletRequest,
             @Parameter(description = "Client IP address (forwarded from proxy)", example = "192.168.1.100")
             @RequestHeader(value = "X-Forwarded-For", required = false) String ipAddress
@@ -218,27 +214,7 @@ public class AuthenticationController {
     })
     @GetMapping("/whoami")
     public ResponseEntity<CurrentUserDto> whoami(HttpServletRequest request) {
-        var principal = request.getUserPrincipal();
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String email = principal.getName(); // Comes from JWT
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        var dto = CurrentUserDto.builder()
-                .id(user.getId().toString())
-                .email(user.getEmail())
-                .firstname(user.getFirstName())
-                .lastname(user.getLastName())
-                .role(user.getRole().name())
-                .lastLogin(user.getLastLogin() != null ? user.getLastLogin().toString()
-                        : LocalDateTime.now().toString())
-                .ipAddress(user.getIpAddress())
-                .build();
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(authService.whoami(request));
     }
 
     @Operation(

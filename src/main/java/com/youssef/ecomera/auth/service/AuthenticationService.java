@@ -3,6 +3,7 @@ package com.youssef.ecomera.auth.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youssef.ecomera.auth.dto.AuthenticationRequest;
 import com.youssef.ecomera.auth.dto.AuthenticationResponse;
+import com.youssef.ecomera.auth.dto.CurrentUserDto;
 import com.youssef.ecomera.auth.dto.RegisterRequest;
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.auth.enums.TokenType;
@@ -10,6 +11,7 @@ import com.youssef.ecomera.auth.repository.TokenRepository;
 import com.youssef.ecomera.auth.security.JwtService;
 import com.youssef.ecomera.common.exception.BusinessException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
+import com.youssef.ecomera.common.exception.UnauthorizedException;
 import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -195,5 +197,27 @@ public class AuthenticationService {
 
         user.setLastLogin(LocalDateTime.now());
         user.setIpAddress(ip);
+    }
+
+    public CurrentUserDto whoami(HttpServletRequest request) {
+        var principal = request.getUserPrincipal();
+        if (principal == null) {
+            throw new UnauthorizedException("No authenticated principal found");
+        }
+
+        String email = principal.getName(); // Comes from JWT
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", FIELD_EMAIL, email));
+
+        return CurrentUserDto.builder()
+                .id(user.getId().toString())
+                .email(user.getEmail())
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .role(user.getRole().name())
+                .lastLogin(user.getLastLogin() != null ? user.getLastLogin().toString()
+                        : LocalDateTime.now().toString())
+                .ipAddress(user.getIpAddress())
+                .build();
     }
 }
