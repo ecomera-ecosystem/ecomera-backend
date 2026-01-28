@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+    <include file="db/changelog/changes/v0.1.0/001-create-users-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/002-create-tokens-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/003-create-products-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/004-create-orders-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/005-create-order-items-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/006-create-payments-table.xml"/>
+    <include file="db/changelog/changes/v0.1.0/007-envers-audit-tables.xml"/>
+
+    <changeSet id="tag-v0.1.0" author="youssef" context="dev, prod" labels="v0.1.0, sprint-0">
+        <tagDatabase tag="v0.1.0"/>
+    </changeSet>
+
+</databaseChangeLog>

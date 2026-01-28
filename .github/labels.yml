@@ -1,0 +1,181 @@
+# ==========================================
+# ECOMERA - GitHub Label Definitions
+# ==========================================
+
+# --- Auth & Security ---
+- name: auth
+  color: "0E8A16"
+  description: "Authentication issues, features and bugs"
+
+- name: security
+  color: "B60205"
+  description: "Security vulnerabilities JWT/Auth issues and dependency risks"
+
+- name: codeql
+  color: "5319E7"
+  description: "CodeQL security scanning, issues, workflows, and automated code analysis"
+
+# --- API & Domain ---
+- name: api
+  color: "0075CA"
+  description: "REST API endpoints and controllers, OpenAPI/Swagger changes"
+
+- name: refactor
+  color: "FBCA04"
+  description: "Code refactoring and cleanup"
+
+- name: enhancement
+  color: "84B6EB"
+  description: "New features or improvements"
+
+# --- Database ---
+- name: database
+  color: "1D76DB"
+  description: "Database schema and data-related changes"
+
+- name: liquibase
+  color: "2B67C6"
+  description: "Liquibase database migrations"
+
+- name: redis
+  color: "D93F0B"
+  description: "Redis caching and configuration"
+
+- name: postgres
+  color: "336791"
+  description: "PostgreSQL database"
+
+# --- CI/CD & Infra ---
+- name: ci-cd
+  color: "0E8A16"
+  description: "Continuous Integration & Continuous Delivery"
+
+- name: qodana
+  color: "FF6F00"
+  description: "Qodana code quality analysis"
+
+- name: docker
+  color: "0DB7ED"
+  description: "Docker containerization"
+
+- name: deployment
+  color: "BFD4F2"
+  description: "Deployment configurations and scripts"
+
+- name: infrastructure
+  color: "D4C5F9"
+  description: "Infrastructure setup and configuration"
+
+- name: github-actions
+  color: "000000"
+  description: "GitHub Actions workflows"
+
+# --- Testing & Performance ---
+- name: testing
+  color: "1D76DB"
+  description: "Test files and testing infrastructure"
+
+- name: performance
+  color: "D93F0B"
+  description: "Performance optimization and profiling"
+
+- name: testcontainers
+  color: "0E8A16"
+  description: "Testcontainers for integration testing"
+
+- name: junit
+  color: "25A162"
+  description: "JUnit unit tests"
+
+- name: mockito
+  color: "C2E0C6"
+  description: "Mockito mocking framework"
+
+# --- Documentation ---
+- name: documentation
+  color: "0075CA"
+  description: "Documentation improvements or additions"
+
+# --- Generic Workflow Labels ---
+- name: bug
+  color: "D73A4A"
+  description: "Something isn't working"
+
+- name: question
+  color: "D876E3"
+  description: "Further information is requested"
+
+- name: help wanted
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: good first issue
+  color: "7057FF"
+  description: "Good for newcomers"
+
+- name: blocked
+  color: "B60205"
+  description: "Blocked by external dependency"
+
+- name: ready-for-review
+  color: "0E8A16"
+  description: "Ready for code review"
+
+- name: release
+  color: "FBCA04"
+  description: "Release preparation or related tasks"
+
+- name: duplicate
+  color: "CFD3D7"
+  description: "This issue or pull request already exists"
+
+- name: invalid
+  color: "E4E669"
+  description: "This doesn't seem right"
+
+- name: wontfix
+  color: "FFFFFF"
+  description: "This will not be worked on"
+
+# --- Priority Labels ---
+- name: high-priority
+  color: "B60205"
+  description: "Critical priority - needs immediate attention"
+
+- name: medium-priority
+  color: "FBCA04"
+  description: "Standard priority"
+
+- name: low-priority
+  color: "C2E0C6"
+  description: "Low priority - nice to have"
+
+# --- Sprint Labels ---
+- name: sprint-0
+  color: "0052CC"
+  description: "Sprint 0: Restructure & Setup"
+
+- name: sprint-1
+  color: "5319E7"
+  description: "Sprint 1: Code Quality & Features"
+
+- name: sprint-2
+  color: "D93F0B"
+  description: "Sprint 2: Testing & Features"
+
+- name: sprint-3
+  color: "0E8A16"
+  description: "Sprint 3: Production Readiness"
+
+- name: sprint-4
+  color: "FBCA04"
+  description: "Sprint 4: Microservices Foundation"
+
+- name: sprint-5
+  color: "FF6F00"
+  description: "Sprint 5: Advanced Features"
+
+# --- Tech Debt ---
+- name: tech-debt
+  color: "D93F0B"
+  description: "Technical debt that needs addressing"

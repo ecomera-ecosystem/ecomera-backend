@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="007-envers-audit-tables.xml" author="youssef" context="dev, prod" labels="v0.1.0, sprint-0">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="revinfo_seq" schemaName="public"/>
+            </not>
+        </preConditions>
+
+        <createSequence incrementBy="50" sequenceName="revinfo_seq" startValue="1"/>
+
+        <createTable tableName="revinfo">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_revinfo"/>
+            </column>
+            <column name="revtstmp" type="BIGINT"/>
+        </createTable>
+
+        <createTable tableName="app_user_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_app_user_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_app_user_aud"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(20)"/>
+            <column name="last_login" type="DATETIME"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+        </createTable>
+
+        <createTable tableName="product_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product_aud"/>
+            </column>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="price" type="DECIMAL"/>
+            <column name="stock" type="INT"/>
+            <column name="category" type="VARCHAR(50)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="product_aud"
+                                 constraintName="FK_PRODUCT_AUD_ON_REV" referencedColumnNames="rev"
+                                 referencedTableName="revinfo"/>
+
+        <createTable tableName="order_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_aud"/>
+            </column>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="total_price" type="DECIMAL"/>
+            <column name="user_id" type="UUID"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="order_aud" constraintName="FK_ORDER_AUD_ON_REV"
+                                 referencedColumnNames="rev" referencedTableName="revinfo"/>
+
+        <createTable tableName="order_item_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_item_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_order_item_aud"/>
+            </column>
+            <column name="unit_price" type="DECIMAL"/>
+            <column name="quantity" type="INT"/>
+            <column name="order_id" type="UUID"/>
+            <column name="product_id" type="UUID"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="order_item_aud"
+                                 constraintName="FK_ORDER_ITEM_AUD_ON_REV" referencedColumnNames="rev"
+                                 referencedTableName="revinfo"/>
+
+        <createTable tableName="payment_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_payment_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_payment_aud"/>
+            </column>
+            <column name="amount" type="DECIMAL"/>
+            <column name="payment_method" type="VARCHAR(20)"/>
+            <column name="payment_status" type="VARCHAR(20)"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="UUID"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="payment_aud"
+                                 constraintName="FK_PAYMENT_AUD_ON_REV" referencedColumnNames="rev"
+                                 referencedTableName="revinfo"/>
+
+        <rollback>
+            <dropTable tableName="payment_aud"/>
+            <dropTable tableName="order_item_aud"/>
+            <dropTable tableName="order_aud"/>
+            <dropTable tableName="product_aud"/>
+            <dropTable tableName="app_user_aud"/>
+            <dropTable tableName="revinfo"/>
+            <dropSequence sequenceName="revinfo_seq"/>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

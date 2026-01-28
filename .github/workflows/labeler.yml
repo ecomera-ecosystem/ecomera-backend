@@ -1,0 +1,55 @@
+name: GitHub Labeler
+
+on:
+  pull_request:
+    branches: [ master, development ]
+    types: [ opened, edited, reopened, labeled, unlabeled, synchronize ]
+  issues:
+    types: [ opened, edited, reopened, labeled, unlabeled, milestoned, demilestoned ]
+  schedule:
+    - cron: "0 0 * * 1"
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Sync labels & Create Missing Labels
+        uses: crazy-max/ghaction-github-labeler@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          yaml-file: '.github/labels.yml'
+          skip-delete: true
+
+      - name: Apply labels to PRs and Issues
+        uses: actions/labeler@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+
+  label-previous:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Label specific past PRs
+        uses: actions/labeler@v6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+          pr-number: |
+            10 # first PR
+            11
+            14
+            19
+            20
+            21
+            22
+            23
