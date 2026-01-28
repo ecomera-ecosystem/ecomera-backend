@@ -62,7 +62,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", id));
 
-        paymentMapper.updatePaymentFromDto(dto, payment);
+        paymentMapper.updateEntityFromDto(dto, payment);
 
         Payment updated = paymentRepository.save(payment);
         return paymentMapper.toDto(updated);
