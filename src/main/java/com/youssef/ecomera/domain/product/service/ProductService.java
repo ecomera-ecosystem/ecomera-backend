@@ -30,10 +30,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    public boolean isExists(UUID id) {
-        return productRepository.existsById(id);
-    }
-
     @Transactional
     public ProductDto saveProduct(ProductCreateDto dto) {
         Product product = productMapper.toEntity(dto);
@@ -48,7 +44,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", id));
 
-        productMapper.updateProductFromDto(dto, product);
+        productMapper.updateEntityFromDto(dto, product);
         Product updated = productRepository.save(product);
 
         log.info("Product updated: {}", id);
