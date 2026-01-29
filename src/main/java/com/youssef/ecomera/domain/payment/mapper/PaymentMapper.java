@@ -1,32 +1,53 @@
 package com.youssef.ecomera.domain.payment.mapper;
 
-import com.youssef.ecomera.domain.payment.dto.PaymentCreateDto;
-import com.youssef.ecomera.domain.payment.dto.PaymentDto;
-import com.youssef.ecomera.domain.payment.dto.PaymentUpdateDto;
+import com.youssef.ecomera.common.mapper.BaseMapper;
 import com.youssef.ecomera.domain.payment.entity.Payment;
+import com.youssef.ecomera.domain.payment.dto.PaymentDto;
+import com.youssef.ecomera.common.mapper.BaseMappingConfig;
+import com.youssef.ecomera.domain.payment.dto.PaymentCreateDto;
+import com.youssef.ecomera.domain.payment.dto.PaymentUpdateDto;
+
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
-public interface PaymentMapper {
+@Mapper(config = BaseMappingConfig.class)
+public interface PaymentMapper extends BaseMapper<Payment, PaymentDto> {
 
     // === ENTITY → DTO ===
+    @Override
     @Mapping(source = "order.id", target = "orderId")
-    @Mapping(source = "paymentMethod", target = "paymentMethod")
-    @Mapping(source = "paymentStatus", target = "paymentStatus")
     PaymentDto toDto(Payment payment);
 
+
     // === DTO → ENTITY (Create) ===
+    @Override
+    @Mapping(target = "order", ignore = true)
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "order", ignore = true) // Set manually in service
-    @Mapping(source = "paymentMethod", target = "paymentMethod")
+    Payment toEntity(PaymentDto dto);
+
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+
+    @Mapping(target = "order.id", source = "orderId")
     @Mapping(target = "paymentStatus", constant = "PENDING") // Default value
     Payment toEntity(PaymentCreateDto dto);
 
     // === Update logic (PATCH) ===
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+
+    @Mapping(target = "order", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updatePaymentFromDto(PaymentUpdateDto dto, @MappingTarget Payment payment);
+    void updateEntityFromDto(PaymentUpdateDto dto, @MappingTarget Payment payment);
 }
