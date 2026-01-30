@@ -1,5 +1,6 @@
 package com.youssef.ecomera.domain.payment.service;
 
+import com.youssef.ecomera.common.exception.AlreadyExistException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
 import com.youssef.ecomera.domain.payment.dto.PaymentCreateDto;
 import com.youssef.ecomera.domain.payment.dto.PaymentDto;
@@ -31,6 +32,9 @@ public class PaymentService {
         Order order = orderRepository.findById(dto.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found", "id", dto.orderId()));
 
+        if (paymentRepository.existsByOrder(order)) {
+            throw new AlreadyExistException("Payment", "orderId", dto.orderId());
+        }
         Payment payment = paymentMapper.toEntity(dto);
         payment.setOrder(order);
         payment.setAmount(order.getTotalPrice());
@@ -38,7 +42,7 @@ public class PaymentService {
         return paymentMapper.toDto(saved);
     }
 
-    public Page<PaymentDto> getAll(int page, int size, String sortBy, String direction){
+    public Page<PaymentDto> getAll(int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
