@@ -1,5 +1,6 @@
 package com.youssef.ecomera.domain.product.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -30,4 +32,14 @@ public enum CategoryType {
                 .findFirst();
     }
 
+    @JsonCreator
+    public static CategoryType forValue(String value) {
+        return fromString(value)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Invalid category: " + value + ". Valid values are: " +
+                                Arrays.stream(values())
+                                        .map(CategoryType::getName)
+                                        .collect(Collectors.joining(", "))
+                ));
+    }
 }

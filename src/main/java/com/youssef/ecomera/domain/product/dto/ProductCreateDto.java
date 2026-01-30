@@ -13,27 +13,31 @@ import java.math.BigDecimal;
  */
 @Schema(description = "DTO for creating a new product")
 public record ProductCreateDto(
-        @NotBlank
+        @NotBlank(message = "Product title is required and cannot be blank")
         @Schema(description = "Product title", example = "MacBook Pro M3")
         String title,
 
-        @Schema(description = "Detailed description of the product", example = "Latest Apple MacBook Pro with M3 chip")
+        @Schema(description = "Detailed description of the product",
+                example = "Latest Apple MacBook Pro with M3 chip")
         String description,
 
-        @NotBlank
-        @Schema(description = "Image URL of the product", example = "https://example.com/images/macbook.jpg")
+        @NotBlank(message = "Image URL is required and cannot be blank")
+        @Schema(description = "Image URL of the product",
+                example = "https://example.com/images/macbook.jpg")
         String imageUrl,
 
-        @NotNull
-        @Positive
+        @NotNull(message = "Price is required")
+        @Positive(message = "Price must be greater than zero")
         @Schema(description = "Price of the product", example = "1999.99")
         BigDecimal price,
 
-        @Min(0) @Schema(description = "Available stock quantity", example = "50")
+        @NotNull(message = "Stock quantity is required")
+        @Min(value = 0, message = "Stock quantity cannot be negative")
+        @Schema(description = "Available stock quantity", example = "50")
         Integer stock,
 
-        @NotBlank
-        @Schema(description = "Category of the product", example = "ELECTRONICS", allowableValues = {"ELECTRONICS", "MEN's CLOTHING", "WOMEN's CLOTHING", "JEWLERY"})
+        @NotNull(message = "Category is required")
+        @Schema(description = "Category of the product", example = "ELECTRONICS", allowableValues = {"ELECTRONICS", "JEWELRY", "MENS_CLOTHING", "WOMENS_CLOTHING"})
         CategoryType category
 ) {
 }
