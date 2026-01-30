@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Audited
-@Table(name = "order")
+@Table(name = "\"order\"")
 public class Order extends BaseEntity {
 
     @NotNull
