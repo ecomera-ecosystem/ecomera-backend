@@ -22,10 +22,6 @@ public record OrderItemCreateDto(
 
         @Schema(description = "UUID of the product being ordered", example = "550e8400-e29b-41d4-a716-446655440000")
         @NotNull(message = "Product ID is required")
-        UUID productId,
-
-        @Schema(description = "UUID of the order this item belongs to", example = "123e4567-e89b-12d3-a456-426614174000")
-        @NotNull(message = "Order ID is required")
-        UUID orderId
+        UUID productId
 ) {}
 
