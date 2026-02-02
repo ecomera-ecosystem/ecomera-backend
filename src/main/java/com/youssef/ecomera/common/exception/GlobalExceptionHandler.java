@@ -1,5 +1,6 @@
 package com.youssef.ecomera.common.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -130,13 +131,47 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
 
-        log.warn("Malformed JSON request: {}", ex.getMessage());
+        Map<String, String> validationErrors = new HashMap<>();
+        String message = "Malformed JSON request body";
 
-        ErrorResponse error = ErrorResponse.of(
+        Throwable cause = ex;
+        JsonMappingException mappingException = null;
+
+        // Walk the cause chain
+        while (cause != null) {
+            if (cause instanceof JsonMappingException jme) {
+                mappingException = jme;
+            }
+            if (cause instanceof IllegalArgumentException iae) {
+
+                if (mappingException != null && !mappingException.getPath().isEmpty()) {
+                    String fieldName = mappingException.getPath().get(0).getFieldName();
+
+                    validationErrors.put(fieldName, iae.getMessage());
+                    message = "Invalid request parameters";
+                }
+
+                break;
+            }
+            cause = cause.getCause();
+        }
+
+        log.warn("Request body parsing error", ex);
+
+        ErrorResponse error = validationErrors.isEmpty()
+                ? ErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                "Malformed JSON request body",
+                HttpStatus.BAD_REQUEST.name(),
+
+                message,
                 request.getRequestURI()
+        )
+                : ErrorResponse.withValidationErrors(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.name(),
+                message,
+                request.getRequestURI(),
+                validationErrors
         );
 
         return ResponseEntity.badRequest().body(error);
