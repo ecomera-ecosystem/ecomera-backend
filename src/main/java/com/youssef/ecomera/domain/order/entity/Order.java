@@ -48,4 +48,24 @@ public class Order extends BaseEntity {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
+
+    public void recalculateTotal() {
+        this.totalPrice = orderItems.stream()
+                .map(OrderItem::calculateSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Helper for adding items
+    public void addItem(OrderItem item) {
+        orderItems.add(item);
+        item.setOrder(this);
+        recalculateTotal();
+    }
+
+    // Helper for removing items
+    public void removeItem(OrderItem item) {
+        orderItems.remove(item);
+        item.setOrder(null);
+        recalculateTotal();
+    }
 }
