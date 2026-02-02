@@ -3,6 +3,7 @@ package com.youssef.ecomera.domain.order.controller;
 import com.youssef.ecomera.domain.order.dto.order.OrderCreateDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderUpdateDto;
+import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
 import com.youssef.ecomera.domain.order.service.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,7 +49,7 @@ public class OrderController {
             @ApiResponse(responseCode = "404", description = "Order not found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<OrderDto> update(
             @Parameter(description = "Order UUID") @PathVariable UUID id,
             @Parameter(description = "Order update payload") @Valid @RequestBody OrderUpdateDto dto) {
@@ -117,5 +118,35 @@ public class OrderController {
             @Parameter(description = "Page size", example = "10") @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(orderService.getByUserId(userId, pageable));
+    }
+
+    @Operation(summary = "Add item to order", description = "Adds a new item to an existing order")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Item added successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "400", description = "Cannot modify completed order")
+    })
+    @PostMapping("/{orderId}/items")
+    public ResponseEntity<OrderDto> addItem(
+            @PathVariable UUID orderId,
+            @Valid @RequestBody OrderItemCreateDto itemRequest) {
+        return ResponseEntity.ok(orderService.addItemToOrder(orderId, itemRequest));
+    }
+
+    @Operation(summary = "Remove item from order", description = "Removes an item from an order")
+    @DeleteMapping("/{orderId}/items/{itemId}")
+    public ResponseEntity<OrderDto> removeItem(
+            @PathVariable UUID orderId,
+            @PathVariable UUID itemId) {
+        return ResponseEntity.ok(orderService.removeItemFromOrder(orderId, itemId));
+    }
+
+    @Operation(summary = "Update item quantity", description = "Updates quantity of an item in an order")
+    @PatchMapping("/{orderId}/items/{itemId}")
+    public ResponseEntity<OrderDto> updateItemQuantity(
+            @PathVariable UUID orderId,
+            @PathVariable UUID itemId,
+            @RequestParam Integer quantity) {
+        return ResponseEntity.ok(orderService.updateItemQuantity(orderId, itemId, quantity));
     }
 }
