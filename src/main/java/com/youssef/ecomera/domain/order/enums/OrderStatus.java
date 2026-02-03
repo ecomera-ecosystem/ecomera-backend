@@ -17,8 +17,14 @@ import java.util.stream.Collectors;
 @Schema(name = "OrderStatus", description = "Represents the lifecycle status of an order")
 public enum OrderStatus {
 
-    @Schema(description = "Order has been created but not yet processed")
+    @Schema(description = "Order created, awaiting payment")
     PENDING("Pending"),
+
+    @Schema(description = "Payment received, order being prepared")
+    PROCESSING("Processing"),
+
+    @Schema(description = "Order is being packed and prepared for shipment")
+    CONFIRMED("Confirmed"),
 
     @Schema(description = "Order has been shipped to the customer")
     SHIPPED("Shipped"),
@@ -27,10 +33,7 @@ public enum OrderStatus {
     DELIVERED("Delivered"),
 
     @Schema(description = "Order has been canceled")
-    CANCELED("Canceled"),
-
-    @Schema(description = "Order has been paid successfully")
-    PAID("Paid");
+    CANCELED("Canceled");
 
     @JsonValue
     private final String statusName;
