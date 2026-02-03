@@ -37,6 +37,7 @@ public interface PaymentMapper extends BaseMapper<Payment, PaymentDto> {
     @Mapping(target = "updatedBy", ignore = true)
 
     @Mapping(target = "order.id", source = "orderId")
+    @Mapping(target = "amount", ignore = true)
     @Mapping(target = "paymentStatus", constant = "PENDING") // Default value
     Payment toEntity(PaymentCreateDto dto);
 
@@ -48,6 +49,8 @@ public interface PaymentMapper extends BaseMapper<Payment, PaymentDto> {
     @Mapping(target = "updatedBy", ignore = true)
 
     @Mapping(target = "order", ignore = true)
+    @Mapping(target = "amount", ignore = true)
+    @Mapping(target = "paymentMethod", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(PaymentUpdateDto dto, @MappingTarget Payment payment);
 }
