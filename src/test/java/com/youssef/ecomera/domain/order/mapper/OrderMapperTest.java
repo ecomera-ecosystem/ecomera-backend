@@ -69,7 +69,6 @@ class OrderMapperTest {
                             item.getUnitPrice(),
                             item.getQuantity(),
                             item.getOrder().getId(),
-                            item.getProduct().getId(),
                             item.getCreatedAt(),
                             item.getUpdatedAt()
                     ))
