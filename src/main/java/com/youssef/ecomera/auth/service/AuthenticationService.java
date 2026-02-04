@@ -1,6 +1,5 @@
 package com.youssef.ecomera.auth.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youssef.ecomera.auth.dto.AuthenticationRequest;
 import com.youssef.ecomera.auth.dto.AuthenticationResponse;
 import com.youssef.ecomera.auth.dto.CurrentUserDto;
@@ -15,17 +14,14 @@ import com.youssef.ecomera.common.exception.UnauthorizedException;
 import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -68,7 +64,8 @@ public class AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(savedUser);
 
         // Save access token
-        saveUserToken(savedUser, jwtToken);
+        saveUserToken(savedUser, jwtToken, TokenType.BEARER);
+        saveUserToken(savedUser, refreshToken, TokenType.REFRESH);
 
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
@@ -99,7 +96,8 @@ public class AuthenticationService {
 
         // Revoke old tokens and save new one
         revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
+        saveUserToken(user, jwtToken, TokenType.BEARER);
+        saveUserToken(user, refreshToken, TokenType.REFRESH);
 
         // Update last login
         user.setLastLogin(LocalDateTime.now());
@@ -116,11 +114,11 @@ public class AuthenticationService {
     /**
      * Save a user token to the database.
      */
-    private void saveUserToken(User user, String jwtToken) {
+    private void saveUserToken(User user, String jwtToken, TokenType tokenType) {
         Token token = Token.builder()
                 .user(user)
                 .value(jwtToken)
-                .tokenType(TokenType.BEARER)
+                .tokenType(tokenType)
                 .expired(false)
                 .revoked(false)
                 .build();
@@ -149,42 +147,29 @@ public class AuthenticationService {
      * Refresh the token for a user.
      */
     @Transactional
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
-        }
-
+    public AuthenticationResponse refreshToken(String authHeader) {
         String refreshToken = authHeader.substring(7);
-        String userEmail = jwtService.extractUsername(refreshToken);
 
-        if (userEmail == null) {
-            return;
+        // Validate refresh token
+        Token storedToken = tokenRepository.findByValue(refreshToken)
+                .orElseThrow(() -> new BusinessException("Invalid refresh token"));
+
+        if (storedToken.isRevoked() || storedToken.isExpired()) {
+            throw new BusinessException("Refresh token invalid");
         }
 
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", FIELD_EMAIL, userEmail));
+        User user = storedToken.getUser();
 
-        if (!jwtService.isTokenValid(refreshToken, user)) {
-            throw new BusinessException("Invalid refresh token");
-        }
-
-        // Generate new access token
         String accessToken = jwtService.generateToken(user);
 
-        // Revoke old tokens and save new one
         revokeAllUserTokens(user);
-        saveUserToken(user, accessToken);
 
-        // Build response
-        AuthenticationResponse authResponse = AuthenticationResponse.builder()
+        saveUserToken(user, accessToken, TokenType.BEARER);
+
+        return AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-
-        response.setContentType("application/json");
-        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
     }
 
     /**

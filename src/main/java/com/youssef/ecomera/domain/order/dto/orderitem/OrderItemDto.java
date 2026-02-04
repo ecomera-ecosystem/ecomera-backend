@@ -26,9 +26,6 @@ public record OrderItemDto(
         @Schema(description = "Quantity of the product in the order", example = "2")
         Integer quantity,
 
-        @Schema(description = "UUID of the order this item belongs to", example = "123e4567-e89b-12d3-a456-426614174000")
-        UUID orderId,
-
         @Schema(description = "UUID of the product being ordered", example = "987e6543-e21b-12d3-a456-426614174999")
         UUID productId,
 

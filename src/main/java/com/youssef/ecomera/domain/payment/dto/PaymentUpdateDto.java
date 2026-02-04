@@ -4,11 +4,8 @@ import com.youssef.ecomera.domain.payment.entity.Payment;
 import com.youssef.ecomera.domain.payment.enums.PaymentMethod;
 import com.youssef.ecomera.domain.payment.enums.PaymentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-
-import java.math.BigDecimal;
 
 /**
  * Update DTO for {@link Payment}
@@ -16,10 +13,6 @@ import java.math.BigDecimal;
 @Schema(name = "PaymentUpdateDto", description = "Payload for updating an existing payment")
 @Builder
 public record PaymentUpdateDto(
-
-        @Schema(description = "Updated payment amount", example = "59.99")
-        @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
-        BigDecimal amount,
 
         @Schema(description = "Updated payment method", example = "CREDIT_CARD", implementation = PaymentMethod.class)
         PaymentMethod paymentMethod,

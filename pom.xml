@@ -66,9 +66,6 @@
 
         <!-- Build Plugins -->
         <jacoco.version>0.8.14</jacoco.version>
-
-        <!-- Spring Modulith -->
-        <spring-modulith.version>1.4.6</spring-modulith.version>
     </properties>
 
     <dependencyManagement>
@@ -78,15 +75,6 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
                 <version>${testcontainers.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Spring Modulith BOM -->
-            <dependency>
-                <groupId>org.springframework.modulith</groupId>
-                <artifactId>spring-modulith-bom</artifactId>
-                <version>${spring-modulith.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -108,14 +96,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
-        </dependency>
-
-        <!-- ============================================ -->
-        <!-- Spring Modulith (Modular Monolith) -->
-        <!-- ============================================ -->
-        <dependency>
-            <groupId>org.springframework.modulith</groupId>
-            <artifactId>spring-modulith-starter-core</artifactId>
         </dependency>
 
         <!-- ============================================ -->
@@ -264,11 +244,11 @@
             <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.modulith</groupId>
-            <artifactId>spring-modulith-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.modulith</groupId>-->
+<!--            <artifactId>spring-modulith-starter-test</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
         <!-- H2 for in-memory testing -->
         <dependency>

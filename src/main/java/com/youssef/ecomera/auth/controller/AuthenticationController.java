@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +21,6 @@ import com.youssef.ecomera.auth.dto.AuthenticationResponse;
 import com.youssef.ecomera.auth.dto.CurrentUserDto;
 import com.youssef.ecomera.auth.service.AuthenticationService;
 import com.youssef.ecomera.auth.dto.RegisterRequest;
-
-import java.io.IOException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -237,11 +235,11 @@ public class AuthenticationController {
             )
     })
     @PostMapping("/refresh-token")
-    public void refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws IOException {
-        authService.refreshToken(request, response);
+    public ResponseEntity<AuthenticationResponse> refreshToken(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+
+        AuthenticationResponse response = authService.refreshToken(authHeader);
+        return ResponseEntity.ok(response);
     }
 
     private String getClientIpFromRequest(HttpServletRequest request) {

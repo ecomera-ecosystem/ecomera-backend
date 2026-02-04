@@ -1,8 +1,10 @@
 package com.youssef.ecomera.common.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
@@ -128,13 +131,47 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
 
-        log.warn("Malformed JSON request: {}", ex.getMessage());
+        Map<String, String> validationErrors = new HashMap<>();
+        String message = "Malformed JSON request body";
 
-        ErrorResponse error = ErrorResponse.of(
+        Throwable cause = ex;
+        JsonMappingException mappingException = null;
+
+        // Walk the cause chain
+        while (cause != null) {
+            if (cause instanceof JsonMappingException jme) {
+                mappingException = jme;
+            }
+            if (cause instanceof IllegalArgumentException iae) {
+
+                if (mappingException != null && !mappingException.getPath().isEmpty()) {
+                    String fieldName = mappingException.getPath().get(0).getFieldName();
+
+                    validationErrors.put(fieldName, iae.getMessage());
+                    message = "Invalid request parameters";
+                }
+
+                break;
+            }
+            cause = cause.getCause();
+        }
+
+        log.warn("Request body parsing error", ex);
+
+        ErrorResponse error = validationErrors.isEmpty()
+                ? ErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                "Malformed JSON request body",
+                HttpStatus.BAD_REQUEST.name(),
+
+                message,
                 request.getRequestURI()
+        )
+                : ErrorResponse.withValidationErrors(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.name(),
+                message,
+                request.getRequestURI(),
+                validationErrors
         );
 
         return ResponseEntity.badRequest().body(error);
@@ -258,5 +295,28 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    // ========================================
+    // Data Integrity Violation Exception
+    // ========================================
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+
+        // Extract user-friendly message
+        String message = "Duplicate entry not allowed";
+        if (ex.getMessage() != null && ex.getMessage().contains("uc_payment_order")) {
+            message = "A payment already exists for this order";
+        }
+
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(message)
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }

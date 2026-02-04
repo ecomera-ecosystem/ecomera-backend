@@ -4,8 +4,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -25,6 +29,23 @@ public enum PaymentStatus {
     REFUNDED("Refunded");
 
     @JsonValue
-    private final String statusName;
-}
+    private final String displayName;
 
+    @JsonCreator
+    public static PaymentStatus fromString(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("PaymentStatus cannot be null");
+        }
+
+        return Arrays.stream(values())
+                .filter(status -> status.name().equalsIgnoreCase(value) ||
+                        status.displayName.equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Invalid payment status: " + value + ". Valid values are: " +
+                                Arrays.stream(values())
+                                        .map(PaymentStatus::name)
+                                        .collect(Collectors.joining(", "))
+                ));
+    }
+}

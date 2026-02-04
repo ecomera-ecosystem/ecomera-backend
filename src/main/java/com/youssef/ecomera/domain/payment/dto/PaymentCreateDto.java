@@ -2,10 +2,8 @@ package com.youssef.ecomera.domain.payment.dto;
 
 import com.youssef.ecomera.domain.payment.enums.PaymentMethod;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.DecimalMin;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -13,11 +11,6 @@ import lombok.Builder;
 @Builder
 @Schema(name = "PaymentCreateDto", description = "Payload for creating a new payment")
 public record PaymentCreateDto(
-
-        @NotNull(message = "Amount is required")
-        @Schema(description = "Payment amount", example = "49.99")
-        @DecimalMin(value = "0.0", inclusive = false, message = "Amount must be greater than 0")
-        BigDecimal amount,
 
         @NotNull(message = "Payment method is required")
         @Schema(description = "Payment method (enum name in uppercase)", example = "PAYPAL", implementation = PaymentMethod.class)
