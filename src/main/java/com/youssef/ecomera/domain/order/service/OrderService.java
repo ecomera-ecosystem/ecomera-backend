@@ -1,6 +1,9 @@
 package com.youssef.ecomera.domain.order.service;
 
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
+import com.youssef.ecomera.domain.cart.entity.Cart;
+import com.youssef.ecomera.domain.cart.entity.CartItem;
+import com.youssef.ecomera.domain.cart.repository.CartRepository;
 import com.youssef.ecomera.domain.order.dto.order.OrderCreateDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderDto;
 import com.youssef.ecomera.domain.order.dto.order.OrderUpdateDto;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -35,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
@@ -149,7 +154,7 @@ public class OrderService {
     @Transactional
     public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemRequest) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -191,7 +196,7 @@ public class OrderService {
     @Transactional
     public OrderDto removeItemFromOrder(UUID orderId, UUID itemId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -233,7 +238,7 @@ public class OrderService {
         }
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -271,6 +276,62 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("Order {} item {} quantity updated: {} -> {}", orderId, itemId, oldQuantity, newQuantity);
 
+        return orderMapper.toDto(savedOrder);
+    }
+
+    @Transactional
+    public OrderDto checkout(UUID userId) {
+        // 1. Fetch the cart
+        Cart cart = cartRepository.findByUserIdWithItems(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+
+        // 2. Guard against empty cart
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            throw new BusinessException("Cannot checkout with an empty cart");
+        }
+
+        // 3. Find the user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // 4. Build the order
+        Order order = Order.builder()
+                .user(user)
+                .status(OrderStatus.PENDING)
+                .totalPrice(BigDecimal.ZERO)
+                .build();
+
+        // 5. Convert cart items → order items
+        for (CartItem cartItem : cart.getCartItems()) {
+            Product product = cartItem.getProduct();
+
+            // Validate stock at checkout time
+            if (product.getStock() < cartItem.getQuantity()) {
+                throw new BusinessException(
+                        String.format("Insufficient stock for '%s'. Available: %d, In cart: %d",
+                                product.getTitle(), product.getStock(), cartItem.getQuantity())
+                );
+            }
+
+            OrderItem orderItem = OrderItem.builder()
+                    .product(product)
+                    .order(order)
+                    .quantity(cartItem.getQuantity())
+                    .unitPrice(cartItem.getUnitPrice()) // snapshot price at purchase time
+                    .build();
+
+            order.addItem(orderItem); // recalculates total automatically
+            product.setStock(product.getStock() - cartItem.getQuantity());
+        }
+
+        // 6. Save order
+        Order savedOrder = orderRepository.save(order);
+
+        // 7. Clear the cart
+        cart.clearItems();
+        cartRepository.save(cart);
+
+        log.info("Checkout completed for user {}. Order id: {}", userId, savedOrder.getId());
         return orderMapper.toDto(savedOrder);
     }
 }
