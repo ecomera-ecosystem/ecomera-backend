@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="010-envers-audit-tables.xml" author="youssef" context="dev, prod" labels="v0.2.0, sprint-1">
+        <createTable tableName="cart_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_aud"/>
+            </column>
+            <column name="user_id" type="UUID"/>
+            <column name="expires_at" type="DATETIME"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="cart_aud" constraintName="FK_CART_AUD_ON_REV"
+                                 referencedColumnNames="rev" referencedTableName="revinfo"/>
+
+        <createTable tableName="cart_item_aud">
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_item_aud"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_item_aud"/>
+            </column>
+            <column name="cart_id" type="UUID"/>
+            <column name="product_id" type="UUID"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="DECIMAL(10,2)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="cart_item_aud"
+                                 constraintName="FK_CART_ITEM_AUD_ON_REV"
+                                 referencedColumnNames="rev" referencedTableName="revinfo"/>
+
+        <rollback>
+            <dropTable tableName="cart_aud"/>
+            <dropTable tableName="cart_item_aud"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -3,7 +3,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
         objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
 
     <include file="db/changelog/changes/v0.1.0/001-create-users-table.xml"/>
@@ -17,5 +17,14 @@
     <changeSet id="tag-v0.1.0" author="youssef" context="dev, prod" labels="v0.1.0, sprint-0">
         <tagDatabase tag="v0.1.0"/>
     </changeSet>
+
+    <include file="/db/changelog/changes/v0.2.0/008-create-carts-table.xml"/>
+    <include file="/db/changelog/changes/v0.2.0/009-create-cart-items-table.xml"/>
+    <include file="/db/changelog/changes/v0.2.0/010-envers-audit-tables.xml"/>
+
+    <changeSet id="tag-v0.2.0" author="youssef" context="dev, prod" labels="v0.2.0, sprint-1">
+        <tagDatabase tag="v0.2.0"/>
+    </changeSet>
+
 
 </databaseChangeLog>
