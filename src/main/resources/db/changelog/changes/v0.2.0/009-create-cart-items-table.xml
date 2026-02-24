@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="009-create-cart-items-table" author="youssef" context="dev, prod" labels="v0.2.0, sprint-1">
+
+        <createTable tableName="cart_item">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false" foreignKeyName="pk_cart_item"/>
+            </column>
+            <column name="cart_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_cart_item_cart"
+                             references="cart(id)"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_cart_item_product"
+                             references="product(id)"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="cart_item"
+                baseColumnNames="cart_id"
+                constraintName="FK_CART_ITEM_ON_CART"
+                referencedTableName="cart"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="cart_item"
+                baseColumnNames="product_id"
+                constraintName="FK_CART_ITEM_ON_PRODUCT"
+                referencedTableName="product"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_cart_item_cart_id" tableName="cart_item">
+            <column name="cart_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_cart_item_product_id" tableName="cart_item">
+            <column name="product_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="cart_item"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

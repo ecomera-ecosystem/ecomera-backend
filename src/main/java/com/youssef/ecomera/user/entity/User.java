@@ -2,6 +2,7 @@ package com.youssef.ecomera.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.youssef.ecomera.common.audit.BaseEntity;
+import com.youssef.ecomera.domain.cart.entity.Cart;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.user.enums.Role;
@@ -70,6 +71,9 @@ public class User extends BaseEntity implements UserDetails {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Order> orders;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart;
 
     // Spring Security UserDetails methods
     @Override
