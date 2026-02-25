@@ -1,8 +1,11 @@
 package com.youssef.ecomera.user.service;
 
 import com.youssef.ecomera.user.dto.ChangePasswordRequest;
+import com.youssef.ecomera.user.dto.UserDto;
 import com.youssef.ecomera.user.entity.User;
+import com.youssef.ecomera.user.mapper.UserMapper;
 import com.youssef.ecomera.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,14 +15,13 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     /**
      * Change the password of the connected user
@@ -47,16 +49,18 @@ public class UserService {
 
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userMapper.toDtoList(userRepository.findAll());
     }
 
-    public User getConnectedUser(Principal connectedUser) {
-        return (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+    public UserDto getConnectedUser(Principal connectedUser) {
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return userMapper.toDto(user);
     }
 
     public List<String> getConnectedUserRoles(Principal connectedUser) {
-        return getConnectedUser(connectedUser).getAuthorities()
+        User user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return user.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
