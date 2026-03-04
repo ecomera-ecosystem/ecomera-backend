@@ -46,7 +46,7 @@ liquibase:
 
 redis:
   - changed-files:
-      - any-glob-to-any-file: [ "src/main/java/**/cache/**", "src/main/resources/redis/**", "redis.conf", "docker/redis/**" ]
+      - any-glob-to-any-file: [ "src/main/java/**/cache/**", "src/main/resources/redis/**", "src/main/java/**/config/Redis*.java", "src/main/java/**/config/*Cache*.java", "redis.conf", "docker/redis/**" ]
   - title: [ "redis", "cache" ]
   - body: [ "redis", "cache", "in-memory" ]
 
