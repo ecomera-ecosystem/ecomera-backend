@@ -15,6 +15,8 @@ import com.youssef.ecomera.domain.product.repository.ProductRepository;
 import com.youssef.ecomera.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,47 +37,48 @@ public class CartService {
     private final CartMapper cartMapper;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "cart", key = "#userId")
     public CartDto getMyCart(UUID userId) {
+        log.debug("Cache miss — fetching cart for user {}", userId);
         Cart cart = getOrCreateCart(userId);
         return cartMapper.toDto(cart);
     }
 
-    public CartDto getCartByUserId(UUID userId){
+    // Admin lookup — not cached, low traffic
+    public CartDto getCartByUserId(UUID userId) {
         Optional<Cart> cart = cartRepository.findByUserId(userId);
-        if(cart.isEmpty()) {
+        if (cart.isEmpty()) {
             throw new ResourceNotFoundException("Cart not found for user: " + userId);
         }
         return cartMapper.toDto(cart.get());
     }
 
+    // Admin lookup — not cached, low traffic
     public CartDto getCartById(UUID cartId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
         return cartMapper.toDto(cart);
     }
 
+    @CacheEvict(value = "cart", key = "#userId")
     public CartDto addToCart(UUID userId, CartCreateDto request) {
         Cart cart = getOrCreateCart(userId);
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        // Check stock availability
         if (product.getStock() < request.quantity()) {
             throw new BusinessException("Not enough stock available");
         }
 
-        // Check if product already in cart
         Optional<CartItem> existingItem = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), product.getId());
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + request.quantity();
-
             if (newQuantity > product.getStock()) {
                 throw new BusinessException("Not enough stock available");
             }
-
             item.setQuantity(newQuantity);
             cartItemRepository.save(item);
         } else {
@@ -89,32 +92,31 @@ public class CartService {
         }
 
         Cart savedCart = cartRepository.save(cart);
-        log.info("Added product {} to cart for user {}", product.getId(), userId);
+        log.info("Added product {} to cart for user {} — cache evicted", product.getId(), userId);
         return cartMapper.toDto(savedCart);
     }
 
+    @CacheEvict(value = "cart", key = "#userId")
     public CartDto updateCartItem(UUID userId, UUID cartItemId, CartItemUpdateDto request) {
         Cart cart = getOrCreateCart(userId);
-
         CartItem cartItem = cart.getCartItems().stream()
                 .filter(item -> item.getId().equals(cartItemId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
-        // Check stock
         if (cartItem.getProduct().getStock() < request.quantity()) {
             throw new BusinessException("Not enough stock available");
         }
 
         cartItem.setQuantity(request.quantity());
         Cart savedCart = cartRepository.save(cart);
-        log.info("Updated cart item {} for user {}", cartItemId, userId);
+        log.info("Updated cart item {} for user {} — cache evicted", cartItemId, userId);
         return cartMapper.toDto(savedCart);
     }
 
+    @CacheEvict(value = "cart", key = "#userId")
     public CartDto removeCartItem(UUID userId, UUID cartItemId) {
         Cart cart = getOrCreateCart(userId);
-
         CartItem cartItem = cart.getCartItems().stream()
                 .filter(item -> item.getId().equals(cartItemId))
                 .findFirst()
@@ -122,32 +124,28 @@ public class CartService {
 
         cart.removeItem(cartItem);
         Cart savedCart = cartRepository.save(cart);
-        log.info("Removed cart item {} for user {}", cartItemId, userId);
+        log.info("Removed cart item {} for user {} — cache evicted", cartItemId, userId);
         return cartMapper.toDto(savedCart);
     }
 
+    @CacheEvict(value = "cart", key = "#userId")
     public void clearCart(UUID userId) {
         Cart cart = getOrCreateCart(userId);
         cart.clearItems();
         cartRepository.save(cart);
-        log.info("Cleared cart for user {}", userId);
+        log.info("Cleared cart for user {} — cache evicted", userId);
     }
 
     private Cart getOrCreateCart(UUID userId) {
         return cartRepository.findByUserIdWithItems(userId)
                 .orElseGet(() -> {
-                    User user = User.builder()
-                            .id(userId)
-                            .build();
-                    Cart newCart = Cart.builder()
-                            .user(user)
-                            .build();
+                    User user = User.builder().id(userId).build();
+                    Cart newCart = Cart.builder().user(user).build();
                     return cartRepository.save(newCart);
                 });
     }
 
-    // Scheduled task to clean expired carts
-    @Scheduled(cron = "0 0 2 * * ?") // Run daily at 2 AM
+    @Scheduled(cron = "0 0 2 * * ?")
     public void cleanExpiredCarts() {
         cartRepository.deleteExpiredCarts(LocalDateTime.now());
         log.info("Cleaned expired carts");
