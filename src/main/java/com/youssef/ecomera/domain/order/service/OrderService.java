@@ -1,6 +1,8 @@
 package com.youssef.ecomera.domain.order.service;
 
+import com.youssef.ecomera.common.exception.BusinessException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
+import com.youssef.ecomera.common.util.SanitizationUtils;
 import com.youssef.ecomera.domain.cart.entity.Cart;
 import com.youssef.ecomera.domain.cart.entity.CartItem;
 import com.youssef.ecomera.domain.cart.repository.CartRepository;
@@ -11,26 +13,22 @@ import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
-import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.order.mapper.OrderMapper;
 import com.youssef.ecomera.domain.order.repository.OrderRepository;
+import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.repository.ProductRepository;
+import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import com.youssef.ecomera.common.exception.BusinessException;
-
-import com.youssef.ecomera.user.entity.User;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -153,8 +151,7 @@ public class OrderService {
 
     @Transactional
     public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemRequest) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+        Order order = findOrderById(orderId);
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -195,8 +192,7 @@ public class OrderService {
 
     @Transactional
     public OrderDto removeItemFromOrder(UUID orderId, UUID itemId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+        Order order = findOrderById(orderId);
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -237,8 +233,7 @@ public class OrderService {
             throw new BusinessException("Quantity must be at least 1");
         }
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+        Order order = findOrderById(orderId);
 
         // Validate order can be modified
         if (order.getStatus() == OrderStatus.SHIPPED ||
@@ -309,7 +304,7 @@ public class OrderService {
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new BusinessException(
                         String.format("Insufficient stock for '%s'. Available: %d, In cart: %d",
-                                product.getTitle(), product.getStock(), cartItem.getQuantity())
+                                SanitizationUtils.sanitize(product.getTitle()), product.getStock(), cartItem.getQuantity())
                 );
             }
 
@@ -333,5 +328,13 @@ public class OrderService {
 
         log.info("Checkout completed for user {}. Order id: {}", userId, savedOrder.getId());
         return orderMapper.toDto(savedOrder);
+    }
+
+
+
+    // Helper method
+    private Order findOrderById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
     }
 }

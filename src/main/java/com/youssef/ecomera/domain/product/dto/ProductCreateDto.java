@@ -5,12 +5,14 @@ import com.youssef.ecomera.domain.product.enums.CategoryType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 
 /**
  * Create DTO for {@link Product}
  */
+@Builder
 @Schema(description = "DTO for creating a new product")
 public record ProductCreateDto(
         @NotBlank(message = "Product title is required and cannot be blank")

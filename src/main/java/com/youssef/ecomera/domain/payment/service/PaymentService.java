@@ -3,6 +3,7 @@ package com.youssef.ecomera.domain.payment.service;
 import com.youssef.ecomera.common.exception.AlreadyExistException;
 import com.youssef.ecomera.common.exception.BusinessException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
+import com.youssef.ecomera.common.util.SanitizationUtils;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import com.youssef.ecomera.domain.payment.dto.PaymentCreateDto;
 import com.youssef.ecomera.domain.payment.dto.PaymentDto;
@@ -36,10 +37,16 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto create(PaymentCreateDto dto) {
+        // Sanitize input to prevent XSS
+        PaymentCreateDto sanitized = PaymentCreateDto.builder()
+                .paymentMethod(dto.paymentMethod())
+                .orderId(dto.orderId())
+                .transactionId(SanitizationUtils.sanitize(dto.transactionId()))
+                .build();
+
         Order order = orderRepository.findById(dto.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", dto.orderId()));
         log.info("Creating payment for order {} using method {}", order.getId(), dto);
-
         // Check if order already has payment
         if (order.getPayment() != null) {
             throw new AlreadyExistException(Payment.class.getSimpleName(), "orderId", dto.orderId());
@@ -51,10 +58,10 @@ public class PaymentService {
         }
 
         // Create payment
-        Payment payment = paymentMapper.toEntity(dto);
+        Payment payment = paymentMapper.toEntity(sanitized);
         payment.setOrder(order);
-        payment.setAmount(order.getTotalPrice());  // ✅ Amount from order
-        payment.setPaymentStatus(PaymentStatus.PENDING);  // ✅ Initial status
+        payment.setAmount(order.getTotalPrice());  // Amount from order
+        payment.setPaymentStatus(PaymentStatus.PENDING);  // Initial status
 
         // Sync bidirectional relationship
         order.setPayment(payment);
