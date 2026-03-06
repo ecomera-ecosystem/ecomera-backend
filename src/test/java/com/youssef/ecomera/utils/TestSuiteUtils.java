@@ -7,6 +7,8 @@ import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import com.youssef.ecomera.domain.payment.entity.Payment;
+import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
+import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.enums.CategoryType;
 import com.youssef.ecomera.user.entity.User;
@@ -15,6 +17,7 @@ import net.datafaker.Faker;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
@@ -26,6 +29,7 @@ public class TestSuiteUtils {
     public static final UUID TEST_ORDER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     public static final UUID TEST_USER_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     public static final UUID TEST_PRODUCT_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
+    public static final UUID TEST_PRODUCT_ID_2 = UUID.fromString("32333333-3333-3333-3333-333333333333");
 
     // ================== USER ==================
     public User createUser() {
@@ -48,8 +52,36 @@ public class TestSuiteUtils {
 
     // ================== PRODUCT ==================
     public Product createProduct() {
+        return createProductA();
+    }
+
+    public Product createProductA() {
         return Product.builder()
                 .id(TEST_PRODUCT_ID)
+                .title("Dell XPS 13")
+                .description("Powerful and compact laptop with intel i7 processor")
+                .imageUrl(faker.internet().image())
+                .price(BigDecimal.valueOf(1199.99))
+                .stock(50)
+                .category(CategoryType.ELECTRONICS)
+                .build();
+    }
+
+    public Product createProductB() {
+        return Product.builder()
+                .id(TEST_PRODUCT_ID_2)
+                .title("Lenovo ThinkPad X1 Carbon")
+                .description("Premium business laptop with intel i7 processor and long battery life")
+                .imageUrl(faker.internet().image())
+                .price(BigDecimal.valueOf(1199.99))
+                .stock(50)
+                .category(CategoryType.ELECTRONICS)
+                .build();
+    }
+
+    public Product createRandomProduct() {
+        return Product.builder()
+                .id(UUID.randomUUID())
                 .title(faker.commerce().productName())
                 .description(faker.lorem().sentence(10))
                 .imageUrl(faker.internet().image())
@@ -71,16 +103,81 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public Product createProduct(UUID id, BigDecimal price) {
-        return Product.builder()
-                .id(id)
+    public ProductCreateDto createProductCreateDto() {
+        return ProductCreateDto.builder()
                 .title(faker.commerce().productName())
                 .description(faker.lorem().sentence(10))
                 .imageUrl(faker.internet().image())
-                .price(price)
+                .price(new BigDecimal(faker.commerce().price().replace(",", "")))
                 .stock(faker.number().numberBetween(10, 500))
                 .category(faker.options().option(CategoryType.class))
                 .build();
+    }
+
+    public ProductCreateDto createProductCreateDtoFromProduct(Product product) {
+        return ProductCreateDto.builder()
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .build();
+    }
+
+    public ProductCreateDto createProductCreateDtoFromProduct() {
+        Product product = createProduct();
+        return ProductCreateDto.builder()
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .build();
+    }
+
+    public ProductDto createProductDtoFromProduct() {
+        Product product = createProduct();
+        return ProductDto.builder()
+                .id(product.getId())
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
+
+    public ProductDto createProductDtoFromProduct(Product product) {
+        return ProductDto.builder()
+                .id(product.getId())
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
+
+    public List<Product> createProductList(){
+        return List.of(
+                createProductA(),
+                createProductB()
+        );
+    }
+
+    public List<ProductDto> createProductDtoListFromProductList(List<Product> products){
+        return List.of(
+                createProductDtoFromProduct(products.get(0)),
+                createProductDtoFromProduct(products.get(1))
+        );
     }
 
     // ================== ORDER ITEM ==================
@@ -184,7 +281,7 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public OrderDto createOrderDto(){
+    public OrderDto createOrderDto() {
         return OrderDto.builder()
                 .id(TEST_ORDER_ID)
                 .status(OrderStatus.PENDING)
