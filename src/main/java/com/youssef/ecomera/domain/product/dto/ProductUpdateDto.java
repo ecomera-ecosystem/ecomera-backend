@@ -6,11 +6,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.PositiveOrZero;
 import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.enums.CategoryType;
+import lombok.Builder;
 
 /**
  * Update DTO for {@link Product}
  * Same fields but are optional instead
  */
+@Builder
 @Schema(description = "DTO for updating an existing product. All fields are optional.")
 public record ProductUpdateDto(
         @Schema(description = "Updated product title", example = "MacBook Pro M3 - 16 inch")
