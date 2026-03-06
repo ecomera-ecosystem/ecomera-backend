@@ -2,7 +2,6 @@ package com.youssef.ecomera.domain.product.service;
 
 import com.youssef.ecomera.common.exception.BusinessException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
-import com.youssef.ecomera.common.util.SanitizationUtils;
 import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
 import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.dto.ProductUpdateDto;
@@ -47,9 +46,9 @@ public class ProductService {
     )
     public ProductDto saveProduct(ProductCreateDto dto) {
         ProductCreateDto sanitized = ProductCreateDto.builder()
-                .title(SanitizationUtils.sanitize(dto.title()))
-                .description(SanitizationUtils.sanitize(dto.description()))
-                .imageUrl(SanitizationUtils.sanitize(dto.imageUrl()))
+                .title(dto.title())
+                .description(dto.description())
+                .imageUrl(dto.imageUrl())
                 .price(dto.price())
                 .stock(dto.stock())
                 .category(dto.category())
