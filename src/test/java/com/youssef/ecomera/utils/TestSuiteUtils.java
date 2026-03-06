@@ -2,6 +2,11 @@ package com.youssef.ecomera.utils;
 
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.auth.enums.TokenType;
+import com.youssef.ecomera.domain.cart.dto.cart.CartCreateDto;
+import com.youssef.ecomera.domain.cart.dto.cart.CartDto;
+import com.youssef.ecomera.domain.cart.dto.cartitem.CartItemUpdateDto;
+import com.youssef.ecomera.domain.cart.entity.Cart;
+import com.youssef.ecomera.domain.cart.entity.CartItem;
 import com.youssef.ecomera.domain.order.dto.order.OrderDto;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
@@ -313,5 +318,51 @@ public class TestSuiteUtils {
                 .build();
     }
 
+
+    // ================== CART ==================
+    public static final UUID TEST_CART_ID = UUID.fromString("44444444-4444-4444-4444-444444444444");
+    public static final UUID TEST_CART_ITEM_ID = UUID.fromString("55555555-5555-5555-5555-555555555555");
+
+    public Cart createCart(User user) {
+        return Cart.builder()
+                .id(TEST_CART_ID)
+                .user(user)
+                .cartItems(new ArrayList<>())
+                .build();
+    }
+
+    public Cart createCartWithItems(User user, Product product) {
+        Cart cart = createCart(user);
+        CartItem item = CartItem.builder()
+                .id(TEST_CART_ITEM_ID)
+                .cart(cart)
+                .product(product)
+                .quantity(2)
+                .unitPrice(product.getPrice())
+                .build();
+        cart.getCartItems().add(item);
+        return cart;
+    }
+
+    public CartDto createCartDto(Cart cart) {
+        return CartDto.builder()
+                .id(cart.getId())
+                .userId(cart.getUser().getId())
+                .cartItems(new ArrayList<>())
+                .build();
+    }
+
+    public CartCreateDto createCartCreateDto(Product product) {
+        return CartCreateDto.builder()
+                .productId(product.getId())
+                .quantity(2)
+                .build();
+    }
+
+    public CartItemUpdateDto createCartItemUpdateDto() {
+        return CartItemUpdateDto.builder()
+                .quantity(3)
+                .build();
+    }
 
 }
