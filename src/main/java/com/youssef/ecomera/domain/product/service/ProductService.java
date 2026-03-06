@@ -45,7 +45,16 @@ public class ProductService {
             }
     )
     public ProductDto saveProduct(ProductCreateDto dto) {
-        Product product = productMapper.toEntity(dto);
+        ProductCreateDto sanitized = ProductCreateDto.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .imageUrl(dto.imageUrl())
+                .price(dto.price())
+                .stock(dto.stock())
+                .category(dto.category())
+                .build();
+
+        Product product = productMapper.toEntity(sanitized);
         Product savedProduct = productRepository.save(product);
         log.info("Product created: {} - {}", savedProduct.getId(), savedProduct.getTitle());
         return productMapper.toDto(savedProduct);

@@ -1,6 +1,8 @@
 package com.youssef.ecomera.domain.order.service;
 
+import com.youssef.ecomera.common.exception.BusinessException;
 import com.youssef.ecomera.common.exception.ResourceNotFoundException;
+import com.youssef.ecomera.common.util.SanitizationUtils;
 import com.youssef.ecomera.domain.cart.entity.Cart;
 import com.youssef.ecomera.domain.cart.entity.CartItem;
 import com.youssef.ecomera.domain.cart.repository.CartRepository;
@@ -11,26 +13,22 @@ import com.youssef.ecomera.domain.order.dto.orderitem.OrderItemCreateDto;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
-import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.order.mapper.OrderMapper;
 import com.youssef.ecomera.domain.order.repository.OrderRepository;
+import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.repository.ProductRepository;
+import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import com.youssef.ecomera.common.exception.BusinessException;
-
-import com.youssef.ecomera.user.entity.User;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -46,32 +44,22 @@ public class OrderService {
 
     @Transactional
     public OrderDto create(OrderCreateDto dto) {
-        // Validate request
         if (dto.items() == null || dto.items().isEmpty()) {
             throw new BusinessException("Cannot create order with empty cart");
         }
 
-        // Find user
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", dto.userId()));
 
         // Create order entity (status is set to PENDING by mapper)
         Order order = orderMapper.toEntity(dto);
         order.setUser(user);
-        order.setOrderItems(new ArrayList<>());  // Initialize list
+        order.setOrderItems(new ArrayList<>());
 
-        // Build OrderItems
         for (OrderItemCreateDto itemDto : dto.items()) {
-            Product product = productRepository.findById(itemDto.productId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.productId()));
+            Product product = findProductById(itemDto.productId());
 
-            // Validate stock availability
-            if (product.getStock() < itemDto.quantity()) {
-                throw new BusinessException(
-                        String.format("Insufficient stock for product '%s'. Available: %d, Requested: %d",
-                                product.getTitle(), product.getStock(), itemDto.quantity())
-                );
-            }
+            validateStock(product, itemDto.quantity());
 
             // Build OrderItem
             OrderItem item = OrderItem.builder()
@@ -101,13 +89,8 @@ public class OrderService {
     public OrderDto updateStatus(UUID id, OrderUpdateDto dto) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", id));
-
-        // Validate status transition (optional business logic)
-        // e.g., can't change from DELIVERED to PENDING
-
         orderMapper.updateEntityFromDto(dto, order);
         Order updatedOrder = orderRepository.save(order);
-
         log.info("Order {} status updated to: {}", id, updatedOrder.getStatus());
         return orderMapper.toDto(updatedOrder);
     }
@@ -119,8 +102,7 @@ public class OrderService {
     }
 
     public Page<OrderDto> getAll(Pageable pageable) {
-        return orderRepository.findAll(pageable)
-                .map(orderMapper::toDto);
+        return orderRepository.findAll(pageable).map(orderMapper::toDto);
     }
 
     public Page<OrderDto> getByStatus(String status, Pageable pageable) {
@@ -129,88 +111,55 @@ public class OrderService {
     }
 
     public Page<OrderDto> getByUserId(UUID userId, Pageable pageable) {
-        // Validate user exists
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User", "id", userId);
         }
-
-        return orderRepository.findByUser_Id(userId, pageable)
-                .map(orderMapper::toDto);
+        return orderRepository.findByUser_Id(userId, pageable).map(orderMapper::toDto);
     }
 
     @Transactional
     public void deleteById(UUID orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(getClass().getSimpleName(), "id", orderId));
-
-        // Optional: Add business logic validation
-        // e.g., can't delete DELIVERED orders
-
+        Order order = findOrderById(orderId);
         orderRepository.delete(order);
         log.info("Order deleted: {}", orderId);
     }
 
-
     @Transactional
-    public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemRequest) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+    public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemDto) {
+        Order order = findOrderById(orderId);
+        validateOrderModifiable(order);
 
-        // Validate order can be modified
-        if (order.getStatus() == OrderStatus.SHIPPED ||
-                order.getStatus() == OrderStatus.DELIVERED ||
-                order.getStatus() == OrderStatus.CANCELED) {
-            throw new BusinessException("Cannot modify order in status: " + order.getStatus());
-        }
-
-        Product product = productRepository.findById(itemRequest.productId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemRequest.productId()));
-
-        // Check stock
-        if (product.getStock() < itemRequest.quantity()) {
-            throw new BusinessException("Insufficient stock for product: " + product.getTitle());
-        }
+        Product product = findProductById(itemDto.productId());
+        validateStock(product, itemDto.quantity());
 
         // Create new item
         OrderItem newItem = OrderItem.builder()
                 .product(product)
                 .order(order)
-                .quantity(itemRequest.quantity())
+                .quantity(itemDto.quantity())
                 .unitPrice(product.getPrice())
                 .build();
 
         order.getOrderItems().add(newItem);
 
         // Reduce stock
-        product.setStock(product.getStock() - itemRequest.quantity());
+        product.setStock(product.getStock() - itemDto.quantity());
 
         // Recalculate total
         order.recalculateTotal();
 
         Order savedOrder = orderRepository.save(order);
-        log.info("Item added to order {}: product {}, quantity {}", orderId, product.getTitle(), itemRequest.quantity());
+        log.info("Item added to order {}: product {}, quantity {}", orderId, product.getTitle(), itemDto.quantity());
 
         return orderMapper.toDto(savedOrder);
     }
 
     @Transactional
     public OrderDto removeItemFromOrder(UUID orderId, UUID itemId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+        Order order = findOrderById(orderId);
+        validateOrderModifiable(order);
 
-        // Validate order can be modified
-        if (order.getStatus() == OrderStatus.SHIPPED ||
-                order.getStatus() == OrderStatus.DELIVERED ||
-                order.getStatus() == OrderStatus.CANCELED) {
-            throw new BusinessException("Cannot modify order in status: " + order.getStatus());
-        }
-
-        OrderItem itemToRemove = order.getOrderItems().stream()
-                .filter(item -> item.getId().equals(itemId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("OrderItem", "id", itemId));
-
-        // Restore stock
+        OrderItem itemToRemove = findOrderItem(order, itemId);
         Product product = itemToRemove.getProduct();
         product.setStock(product.getStock() + itemToRemove.getQuantity());
 
@@ -237,79 +186,59 @@ public class OrderService {
             throw new BusinessException("Quantity must be at least 1");
         }
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+        Order order = findOrderById(orderId);
+        validateOrderModifiable(order);
 
-        // Validate order can be modified
-        if (order.getStatus() == OrderStatus.SHIPPED ||
-                order.getStatus() == OrderStatus.DELIVERED ||
-                order.getStatus() == OrderStatus.CANCELED) {
-            throw new BusinessException("Cannot modify order in status: " + order.getStatus());
-        }
-
-        OrderItem item = order.getOrderItems().stream()
-                .filter(oi -> oi.getId().equals(itemId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("OrderItem", "id", itemId));
-
+        OrderItem item = findOrderItem(order, itemId);
         Product product = item.getProduct();
         int oldQuantity = item.getQuantity();
         int quantityDiff = newQuantity - oldQuantity;
 
-        // Check stock if increasing quantity
         if (quantityDiff > 0) {
             if (product.getStock() < quantityDiff) {
                 throw new BusinessException("Insufficient stock. Available: " + product.getStock());
             }
             product.setStock(product.getStock() - quantityDiff);
         } else if (quantityDiff < 0) {
-            // Restore stock if decreasing quantity
             product.setStock(product.getStock() + Math.abs(quantityDiff));
         }
 
         item.setQuantity(newQuantity);
         item.setUnitPrice(product.getPrice());
-
-        // Recalculate total
         order.recalculateTotal();
 
         Order savedOrder = orderRepository.save(order);
         log.info("Order {} item {} quantity updated: {} -> {}", orderId, itemId, oldQuantity, newQuantity);
-
         return orderMapper.toDto(savedOrder);
     }
 
     @Transactional
     public OrderDto checkout(UUID userId) {
-        // 1. Fetch the cart
         Cart cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
 
-        // 2. Guard against empty cart
         if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
             throw new BusinessException("Cannot checkout with an empty cart");
         }
 
-        // 3. Find the user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        // 4. Build the order
         Order order = Order.builder()
                 .user(user)
                 .status(OrderStatus.PENDING)
                 .totalPrice(BigDecimal.ZERO)
                 .build();
 
-        // 5. Convert cart items → order items
         for (CartItem cartItem : cart.getCartItems()) {
             Product product = cartItem.getProduct();
 
-            // Validate stock at checkout time
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new BusinessException(
                         String.format("Insufficient stock for '%s'. Available: %d, In cart: %d",
-                                product.getTitle(), product.getStock(), cartItem.getQuantity())
+                                SanitizationUtils.sanitize(product.getTitle()),
+                                product.getStock(),
+                                cartItem.getQuantity())
                 );
             }
 
@@ -317,21 +246,55 @@ public class OrderService {
                     .product(product)
                     .order(order)
                     .quantity(cartItem.getQuantity())
-                    .unitPrice(cartItem.getUnitPrice()) // snapshot price at purchase time
+                    .unitPrice(cartItem.getUnitPrice())
                     .build();
 
-            order.addItem(orderItem); // recalculates total automatically
+            order.addItem(orderItem);
             product.setStock(product.getStock() - cartItem.getQuantity());
         }
 
-        // 6. Save order
         Order savedOrder = orderRepository.save(order);
-
-        // 7. Clear the cart
         cart.clearItems();
         cartRepository.save(cart);
 
         log.info("Checkout completed for user {}. Order id: {}", userId, savedOrder.getId());
         return orderMapper.toDto(savedOrder);
+    }
+
+
+    // Private Helpers
+    private Order findOrderById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+    }
+
+    private Product findProductById(UUID productId){
+        return  productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+
+    }
+
+    private OrderItem findOrderItem(Order order, UUID itemId) {
+        return order.getOrderItems().stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("OrderItem", "id", itemId));
+    }
+
+    private void validateOrderModifiable(Order order) {
+        if (order.getStatus() == OrderStatus.SHIPPED ||
+                order.getStatus() == OrderStatus.DELIVERED ||
+                order.getStatus() == OrderStatus.CANCELED) {
+            throw new BusinessException("Cannot modify order in status: " + order.getStatus());
+        }
+    }
+
+    private void validateStock(Product product, int quantity) {
+        if (product.getStock() < quantity) {
+            throw new BusinessException(
+                    String.format("Insufficient stock for product '%s'. Available: %d, Requested: %d",
+                            SanitizationUtils.sanitize(product.getTitle()), product.getStock(), quantity)
+            );
+        }
     }
 }

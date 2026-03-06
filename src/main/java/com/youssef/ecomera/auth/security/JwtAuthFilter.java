@@ -18,9 +18,6 @@ import org.springframework.lang.NonNull;
 import java.io.IOException;
 
 /**
- * @author Youssef
- * @version 1.0
- * @created 13/04/2025
  * This class is responsible for filtering JWT tokens from incoming requests.
  * It extends OncePerRequestFilter to ensure that the filter is executed once per request.
  * It is used to validate the JWT token and set the authentication in the security context.
@@ -80,5 +77,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response); // Continue the filter chain to the next filter. Never forget this line.
     }
-
 }

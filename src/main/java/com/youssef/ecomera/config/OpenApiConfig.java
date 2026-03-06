@@ -76,7 +76,12 @@ import io.swagger.v3.oas.annotations.servers.ServerVariable;
                 @Server(
                         description = "Production (Railway)",
                         url = "https://ecomera-production.railway.app",
-                        variables = {}
+                        variables = {
+                                @ServerVariable(
+                                        name = "version",
+                                        defaultValue = "v1",
+                                        allowableValues = {"v1", "v2"})
+                        }
                 )
         },
         security = {

@@ -28,10 +28,6 @@ import static org.springframework.http.HttpMethod.*;
 /**
  * Spring Security configuration for Ecomera.
  * Configures JWT authentication, role-based and authority-based access, and Swagger whitelist.
- *
- * @author Youssef
- * @version 2.0
- * @created 16/01/2026
  */
 @Configuration
 @EnableWebSecurity
