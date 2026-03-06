@@ -40,7 +40,6 @@ public class OrderController {
     @ApiResponse(responseCode = "201", description = "Order created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid order data")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @SuppressWarnings("taint")
     public ResponseEntity<OrderDto> create(
             @Parameter(description = "Order creation payload") @Valid @RequestBody OrderCreateDto orderDto) {
         OrderDto savedOrder = orderService.create(orderDto);
