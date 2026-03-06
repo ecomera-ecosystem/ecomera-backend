@@ -57,8 +57,7 @@ public class OrderService {
         order.setOrderItems(new ArrayList<>());
 
         for (OrderItemCreateDto itemDto : dto.items()) {
-            Product product = productRepository.findById(itemDto.productId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemDto.productId()));
+            Product product = findProductById(itemDto.productId());
 
             validateStock(product, itemDto.quantity());
 
@@ -126,33 +125,31 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemRequest) {
+    public OrderDto addItemToOrder(UUID orderId, OrderItemCreateDto itemDto) {
         Order order = findOrderById(orderId);
         validateOrderModifiable(order);
 
-        Product product = productRepository.findById(itemRequest.productId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemRequest.productId()));
-
-        validateStock(product, itemRequest.quantity());
+        Product product = findProductById(itemDto.productId());
+        validateStock(product, itemDto.quantity());
 
         // Create new item
         OrderItem newItem = OrderItem.builder()
                 .product(product)
                 .order(order)
-                .quantity(itemRequest.quantity())
+                .quantity(itemDto.quantity())
                 .unitPrice(product.getPrice())
                 .build();
 
         order.getOrderItems().add(newItem);
 
         // Reduce stock
-        product.setStock(product.getStock() - itemRequest.quantity());
+        product.setStock(product.getStock() - itemDto.quantity());
 
         // Recalculate total
         order.recalculateTotal();
 
         Order savedOrder = orderRepository.save(order);
-        log.info("Item added to order {}: product {}, quantity {}", orderId, product.getTitle(), itemRequest.quantity());
+        log.info("Item added to order {}: product {}, quantity {}", orderId, product.getTitle(), itemDto.quantity());
 
         return orderMapper.toDto(savedOrder);
     }
@@ -269,6 +266,12 @@ public class OrderService {
     private Order findOrderById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(Order.class.getSimpleName(), "id", orderId));
+    }
+
+    private Product findProductById(UUID productId){
+        return  productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+
     }
 
     private OrderItem findOrderItem(Order order, UUID itemId) {
