@@ -20,10 +20,12 @@ import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
 import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.enums.CategoryType;
+import com.youssef.ecomera.user.dto.UserDto;
 import com.youssef.ecomera.user.entity.User;
 import com.youssef.ecomera.user.enums.Role;
 import lombok.experimental.UtilityClass;
 import net.datafaker.Faker;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -70,13 +72,25 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public User createUser(UUID id) {
-        return User.builder()
-                .id(id)
-                .email(faker.internet().emailAddress())
-                .firstName(faker.name().firstName())
-                .lastName(faker.name().lastName())
+
+    public UserDto createUserDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
                 .build();
+    }
+
+    public List<UserDto> createUserDtoList(List<User> users) {
+        return users.stream()
+                .map(TestSuiteUtils::createUserDto)
+                .toList();
+    }
+
+    public UsernamePasswordAuthenticationToken createPrincipal(User user) {
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
     }
 
     // ================== PRODUCT ==================
@@ -108,32 +122,9 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public Product createRandomProduct() {
-        return Product.builder()
-                .id(UUID.randomUUID())
-                .title(faker.commerce().productName())
-                .description(faker.lorem().sentence(10))
-                .imageUrl(faker.internet().image())
-                .price(new BigDecimal(faker.commerce().price().replace(",", "")))
-                .stock(faker.number().numberBetween(10, 500))
-                .category(faker.options().option(CategoryType.class))
-                .build();
-    }
-
     public Product createProduct(UUID id) {
         return Product.builder()
                 .id(id)
-                .title(faker.commerce().productName())
-                .description(faker.lorem().sentence(10))
-                .imageUrl(faker.internet().image())
-                .price(new BigDecimal(faker.commerce().price().replace(",", "")))
-                .stock(faker.number().numberBetween(10, 500))
-                .category(faker.options().option(CategoryType.class))
-                .build();
-    }
-
-    public ProductCreateDto createProductCreateDto() {
-        return ProductCreateDto.builder()
                 .title(faker.commerce().productName())
                 .description(faker.lorem().sentence(10))
                 .imageUrl(faker.internet().image())
@@ -151,33 +142,6 @@ public class TestSuiteUtils {
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .category(product.getCategory())
-                .build();
-    }
-
-    public ProductCreateDto createProductCreateDtoFromProduct() {
-        Product product = createProduct();
-        return ProductCreateDto.builder()
-                .title(product.getTitle())
-                .description(product.getDescription())
-                .imageUrl(product.getImageUrl())
-                .price(product.getPrice())
-                .stock(product.getStock())
-                .category(product.getCategory())
-                .build();
-    }
-
-    public ProductDto createProductDtoFromProduct() {
-        Product product = createProduct();
-        return ProductDto.builder()
-                .id(product.getId())
-                .title(product.getTitle())
-                .description(product.getDescription())
-                .imageUrl(product.getImageUrl())
-                .price(product.getPrice())
-                .stock(product.getStock())
-                .category(product.getCategory())
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
                 .build();
     }
 
@@ -202,13 +166,6 @@ public class TestSuiteUtils {
         );
     }
 
-    public List<ProductDto> createProductDtoListFromProductList(List<Product> products){
-        return List.of(
-                createProductDtoFromProduct(products.get(0)),
-                createProductDtoFromProduct(products.get(1))
-        );
-    }
-
     // ================== ORDER ITEM ==================
     public OrderItem createOrderItem(Product product, Order order) {
         int quantity = faker.number().numberBetween(1, 10);
@@ -218,16 +175,6 @@ public class TestSuiteUtils {
                 .quantity(quantity)
                 .product(product)
                 .order(order)
-                .build();
-    }
-
-    public OrderItem createOrderItemWithoutOrder(Product product) {
-        int quantity = faker.number().numberBetween(1, 10);
-        return OrderItem.builder()
-                .id(UUID.randomUUID())
-                .unitPrice(product.getPrice())
-                .quantity(quantity)
-                .product(product)
                 .build();
     }
 
@@ -266,12 +213,6 @@ public class TestSuiteUtils {
         }
 
         order.setTotalPrice(total);
-        return order;
-    }
-
-    public Order createOrderWithFixedId() {
-        Order order = createOrder();
-        order.setId(TEST_ORDER_ID);
         return order;
     }
 
