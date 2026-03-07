@@ -1,5 +1,7 @@
 package com.youssef.ecomera.utils;
 
+import com.youssef.ecomera.auth.dto.AuthenticationRequest;
+import com.youssef.ecomera.auth.dto.RegisterRequest;
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.auth.enums.TokenType;
 import com.youssef.ecomera.domain.cart.dto.cart.CartCreateDto;
@@ -17,6 +19,7 @@ import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.enums.CategoryType;
 import com.youssef.ecomera.user.entity.User;
+import com.youssef.ecomera.user.enums.Role;
 import lombok.experimental.UtilityClass;
 import net.datafaker.Faker;
 
@@ -36,6 +39,24 @@ public class TestSuiteUtils {
     public static final UUID TEST_PRODUCT_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
     public static final UUID TEST_PRODUCT_ID_2 = UUID.fromString("32333333-3333-3333-3333-333333333333");
 
+    // ================== AUTH ==================
+    public RegisterRequest createRegisterRequest() {
+        return RegisterRequest.builder()
+                .firstname(faker.name().firstName())
+                .lastname(faker.name().lastName())
+                .email(faker.internet().emailAddress())
+                .password("Password123!")
+                .role(Role.USER)
+                .build();
+    }
+
+    public AuthenticationRequest createAuthRequest(String email) {
+        return AuthenticationRequest.builder()
+                .email(email)
+                .password("Password123!")
+                .build();
+    }
+
     // ================== USER ==================
     public User createUser() {
         return User.builder()
@@ -43,6 +64,7 @@ public class TestSuiteUtils {
                 .email(faker.internet().emailAddress())
                 .firstName(faker.name().firstName())
                 .lastName(faker.name().lastName())
+                .role(Role.USER)
                 .build();
     }
 
