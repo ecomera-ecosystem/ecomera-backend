@@ -14,6 +14,8 @@ import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import com.youssef.ecomera.domain.payment.entity.Payment;
+import com.youssef.ecomera.domain.payment.enums.PaymentMethod;
+import com.youssef.ecomera.domain.payment.enums.PaymentStatus;
 import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
 import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.entity.Product;
@@ -233,7 +235,8 @@ public class TestSuiteUtils {
     public Payment createPayment() {
         return Payment.builder()
                 .id(UUID.randomUUID())
-                // Add your payment fields with faker
+                .paymentStatus(PaymentStatus.PENDING)
+                .paymentMethod(PaymentMethod.PAYPAL)
                 .build();
     }
 
