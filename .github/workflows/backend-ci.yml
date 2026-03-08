@@ -35,13 +35,29 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7.0.0
         with:
           name: test-results
           path: target/surefire-reports/*.xml
 
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
+      - name: JaCoCo Coverage Report
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 50
+          min-coverage-changed-files: 60
+          title: Code Coverage Report
+          update-comment: true
+
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7.0.0
         with:
           name: ecomera-backend-${{ github.sha }}
           path: target/*.jar

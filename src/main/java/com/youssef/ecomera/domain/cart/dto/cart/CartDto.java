@@ -2,11 +2,14 @@ package com.youssef.ecomera.domain.cart.dto.cart;
 
 import com.youssef.ecomera.domain.cart.dto.cartitem.CartItemDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Builder
 @Schema(description = "Shopping cart response")
 public record CartDto(
         @Schema(description = "Cart ID", example = "123e4567-e89b-12d3-a456-426614174000")

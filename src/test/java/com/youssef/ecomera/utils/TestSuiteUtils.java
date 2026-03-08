@@ -1,20 +1,35 @@
 package com.youssef.ecomera.utils;
 
+import com.youssef.ecomera.auth.dto.AuthenticationRequest;
+import com.youssef.ecomera.auth.dto.RegisterRequest;
 import com.youssef.ecomera.auth.entity.Token;
 import com.youssef.ecomera.auth.enums.TokenType;
+import com.youssef.ecomera.domain.cart.dto.cart.CartCreateDto;
+import com.youssef.ecomera.domain.cart.dto.cart.CartDto;
+import com.youssef.ecomera.domain.cart.dto.cartitem.CartItemUpdateDto;
+import com.youssef.ecomera.domain.cart.entity.Cart;
+import com.youssef.ecomera.domain.cart.entity.CartItem;
 import com.youssef.ecomera.domain.order.dto.order.OrderDto;
 import com.youssef.ecomera.domain.order.entity.Order;
 import com.youssef.ecomera.domain.order.entity.OrderItem;
 import com.youssef.ecomera.domain.order.enums.OrderStatus;
 import com.youssef.ecomera.domain.payment.entity.Payment;
+import com.youssef.ecomera.domain.payment.enums.PaymentMethod;
+import com.youssef.ecomera.domain.payment.enums.PaymentStatus;
+import com.youssef.ecomera.domain.product.dto.ProductCreateDto;
+import com.youssef.ecomera.domain.product.dto.ProductDto;
 import com.youssef.ecomera.domain.product.entity.Product;
 import com.youssef.ecomera.domain.product.enums.CategoryType;
+import com.youssef.ecomera.user.dto.UserDto;
 import com.youssef.ecomera.user.entity.User;
+import com.youssef.ecomera.user.enums.Role;
 import lombok.experimental.UtilityClass;
 import net.datafaker.Faker;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
@@ -26,6 +41,25 @@ public class TestSuiteUtils {
     public static final UUID TEST_ORDER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     public static final UUID TEST_USER_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     public static final UUID TEST_PRODUCT_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
+    public static final UUID TEST_PRODUCT_ID_2 = UUID.fromString("32333333-3333-3333-3333-333333333333");
+
+    // ================== AUTH ==================
+    public RegisterRequest createRegisterRequest() {
+        return RegisterRequest.builder()
+                .firstname(faker.name().firstName())
+                .lastname(faker.name().lastName())
+                .email(faker.internet().emailAddress())
+                .password("Password123!")
+                .role(Role.USER)
+                .build();
+    }
+
+    public AuthenticationRequest createAuthRequest(String email) {
+        return AuthenticationRequest.builder()
+                .email(email)
+                .password("Password123!")
+                .build();
+    }
 
     // ================== USER ==================
     public User createUser() {
@@ -34,28 +68,57 @@ public class TestSuiteUtils {
                 .email(faker.internet().emailAddress())
                 .firstName(faker.name().firstName())
                 .lastName(faker.name().lastName())
+                .role(Role.USER)
                 .build();
     }
 
-    public User createUser(UUID id) {
-        return User.builder()
-                .id(id)
-                .email(faker.internet().emailAddress())
-                .firstName(faker.name().firstName())
-                .lastName(faker.name().lastName())
+
+    public UserDto createUserDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
                 .build();
+    }
+
+    public List<UserDto> createUserDtoList(List<User> users) {
+        return users.stream()
+                .map(TestSuiteUtils::createUserDto)
+                .toList();
+    }
+
+    public UsernamePasswordAuthenticationToken createPrincipal(User user) {
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
     }
 
     // ================== PRODUCT ==================
     public Product createProduct() {
+        return createProductA();
+    }
+
+    public Product createProductA() {
         return Product.builder()
                 .id(TEST_PRODUCT_ID)
-                .title(faker.commerce().productName())
-                .description(faker.lorem().sentence(10))
+                .title("Dell XPS 13")
+                .description("Powerful and compact laptop with intel i7 processor")
                 .imageUrl(faker.internet().image())
-                .price(new BigDecimal(faker.commerce().price().replace(",", "")))
-                .stock(faker.number().numberBetween(10, 500))
-                .category(faker.options().option(CategoryType.class))
+                .price(BigDecimal.valueOf(1199.99))
+                .stock(50)
+                .category(CategoryType.ELECTRONICS)
+                .build();
+    }
+
+    public Product createProductB() {
+        return Product.builder()
+                .id(TEST_PRODUCT_ID_2)
+                .title("Lenovo ThinkPad X1 Carbon")
+                .description("Premium business laptop with intel i7 processor and long battery life")
+                .imageUrl(faker.internet().image())
+                .price(BigDecimal.valueOf(1199.99))
+                .stock(50)
+                .category(CategoryType.ELECTRONICS)
                 .build();
     }
 
@@ -71,16 +134,36 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public Product createProduct(UUID id, BigDecimal price) {
-        return Product.builder()
-                .id(id)
-                .title(faker.commerce().productName())
-                .description(faker.lorem().sentence(10))
-                .imageUrl(faker.internet().image())
-                .price(price)
-                .stock(faker.number().numberBetween(10, 500))
-                .category(faker.options().option(CategoryType.class))
+    public ProductCreateDto createProductCreateDtoFromProduct(Product product) {
+        return ProductCreateDto.builder()
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
                 .build();
+    }
+
+    public ProductDto createProductDtoFromProduct(Product product) {
+        return ProductDto.builder()
+                .id(product.getId())
+                .title(product.getTitle())
+                .description(product.getDescription())
+                .imageUrl(product.getImageUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
+
+    public List<Product> createProductList(){
+        return List.of(
+                createProductA(),
+                createProductB()
+        );
     }
 
     // ================== ORDER ITEM ==================
@@ -95,21 +178,12 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public OrderItem createOrderItemWithoutOrder(Product product) {
-        int quantity = faker.number().numberBetween(1, 10);
-        return OrderItem.builder()
-                .id(UUID.randomUUID())
-                .unitPrice(product.getPrice())
-                .quantity(quantity)
-                .product(product)
-                .build();
-    }
-
     // ================== PAYMENT ==================
     public Payment createPayment() {
         return Payment.builder()
                 .id(UUID.randomUUID())
-                // Add your payment fields with faker
+                .paymentStatus(PaymentStatus.PENDING)
+                .paymentMethod(PaymentMethod.PAYPAL)
                 .build();
     }
 
@@ -139,12 +213,6 @@ public class TestSuiteUtils {
         }
 
         order.setTotalPrice(total);
-        return order;
-    }
-
-    public Order createOrderWithFixedId() {
-        Order order = createOrder();
-        order.setId(TEST_ORDER_ID);
         return order;
     }
 
@@ -184,7 +252,7 @@ public class TestSuiteUtils {
                 .build();
     }
 
-    public OrderDto createOrderDto(){
+    public OrderDto createOrderDto() {
         return OrderDto.builder()
                 .id(TEST_ORDER_ID)
                 .status(OrderStatus.PENDING)
@@ -216,5 +284,51 @@ public class TestSuiteUtils {
                 .build();
     }
 
+
+    // ================== CART ==================
+    public static final UUID TEST_CART_ID = UUID.fromString("44444444-4444-4444-4444-444444444444");
+    public static final UUID TEST_CART_ITEM_ID = UUID.fromString("55555555-5555-5555-5555-555555555555");
+
+    public Cart createCart(User user) {
+        return Cart.builder()
+                .id(TEST_CART_ID)
+                .user(user)
+                .cartItems(new ArrayList<>())
+                .build();
+    }
+
+    public Cart createCartWithItems(User user, Product product) {
+        Cart cart = createCart(user);
+        CartItem item = CartItem.builder()
+                .id(TEST_CART_ITEM_ID)
+                .cart(cart)
+                .product(product)
+                .quantity(2)
+                .unitPrice(product.getPrice())
+                .build();
+        cart.getCartItems().add(item);
+        return cart;
+    }
+
+    public CartDto createCartDto(Cart cart) {
+        return CartDto.builder()
+                .id(cart.getId())
+                .userId(cart.getUser().getId())
+                .cartItems(new ArrayList<>())
+                .build();
+    }
+
+    public CartCreateDto createCartCreateDto(Product product) {
+        return CartCreateDto.builder()
+                .productId(product.getId())
+                .quantity(2)
+                .build();
+    }
+
+    public CartItemUpdateDto createCartItemUpdateDto() {
+        return CartItemUpdateDto.builder()
+                .quantity(3)
+                .build();
+    }
 
 }
