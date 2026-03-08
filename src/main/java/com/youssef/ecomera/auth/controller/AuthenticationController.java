@@ -1,6 +1,7 @@
 package com.youssef.ecomera.auth.controller;
 
 
+import com.youssef.ecomera.common.util.HttpUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -172,7 +173,7 @@ public class AuthenticationController {
             @RequestHeader(value = "X-Forwarded-For", required = false) String ipAddress
     ) {
         // Provide default if header missing
-        String clientIp = ipAddress != null ? ipAddress : getClientIpFromRequest(httpServletRequest);
+        String clientIp = ipAddress != null ? ipAddress : HttpUtils.getClientIp(httpServletRequest);
 
         authService.updateLastLogin(request.email(), clientIp);
         return ResponseEntity.ok(authService.authenticate(request));
@@ -240,13 +241,5 @@ public class AuthenticationController {
 
         AuthenticationResponse response = authService.refreshToken(authHeader);
         return ResponseEntity.ok(response);
-    }
-
-    private String getClientIpFromRequest(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
     }
 }
