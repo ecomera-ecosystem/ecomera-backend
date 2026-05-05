@@ -14,12 +14,12 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - ecomera-network
+      - ecomera-monolith-network
     restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
-    container_name: ecomera-db
+    container_name: ecomera-monolith-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ecomera}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -29,7 +29,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - ecomera-network
+      - ecomera-monolith-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -39,7 +39,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ecomera-redis
+    container_name: ecomera-monolith-redis
     ports:
       - "6379:6379"
     volumes:
@@ -51,7 +51,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ecomera-network
+      - ecomera-monolith-network
     restart: unless-stopped
 
   pgadmin:
@@ -65,7 +65,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - ecomera-network
+      - ecomera-monolith-network
     restart: unless-stopped
 
 volumes:
@@ -73,5 +73,5 @@ volumes:
   redis_data:
 
 networks:
-  ecomera-network:
+  ecomera-monolith-network:
     driver: bridge
